@@ -3,1197 +3,1372 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Klara — Privacy-Preserving Health Oracle</title>
+  <title>Klara — Privacy-Preserving Health Oracle for Web3</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
   <style>
     :root {
-      --ink: #0a0d0f;
-      --paper: #f4f1eb;
-      --acid: #b8ff57;
-      --signal: #00e5c9;
-      --rust: #e85d2f;
+      --ink: #0a0c0f;
+      --paper: #f5f3ee;
+      --accent: #c8f03a;
+      --accent2: #1affd5;
+      --mid: #1e2128;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing: border-box; }
 
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Inter', sans-serif;
       background-color: var(--ink);
       color: var(--paper);
+      font-family: 'Inter', sans-serif;
       overflow-x: hidden;
     }
 
-    .font-display { font-family: 'Syne', sans-serif; }
+    .syne { font-family: 'Syne', sans-serif; }
 
     /* Grain overlay */
     body::before {
       content: '';
       position: fixed;
       inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 9999;
-      opacity: 0.032;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-      background-size: 200px 200px;
+      opacity: 0.35;
     }
 
     /* Mesh gradient blobs */
-    .mesh-blob {
+    .blob {
       position: absolute;
-      border-radius: 9999px;
+      border-radius: 50%;
       filter: blur(120px);
       pointer-events: none;
     }
 
-    .hero-blob-1 {
+    .blob-1 {
       width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(184,255,87,0.12) 0%, transparent 70%);
-      top: -100px; right: -100px;
+      background: radial-gradient(circle, rgba(200,240,58,0.12) 0%, transparent 70%);
+      top: -100px; left: -200px;
     }
-    .hero-blob-2 {
+
+    .blob-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(26,255,213,0.1) 0%, transparent 70%);
+      top: 200px; right: -150px;
+    }
+
+    .blob-3 {
       width: 400px; height: 400px;
-      background: radial-gradient(circle, rgba(0,229,201,0.10) 0%, transparent 70%);
-      bottom: 0; left: 100px;
+      background: radial-gradient(circle, rgba(200,240,58,0.08) 0%, transparent 70%);
+      bottom: -50px; left: 30%;
     }
 
-    /* Marquee */
-    .marquee-track {
+    /* Accent pill */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(200,240,58,0.1);
+      border: 1px solid rgba(200,240,58,0.25);
+      color: var(--accent);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+    }
+
+    .pill-teal {
+      background: rgba(26,255,213,0.1);
+      border-color: rgba(26,255,213,0.25);
+      color: var(--accent2);
+    }
+
+    /* Hero headline stroke */
+    .stroke-text {
+      -webkit-text-stroke: 1.5px rgba(245,243,238,0.35);
+      color: transparent;
+    }
+
+    /* Large display number */
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Feature card */
+    .feat-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 20px;
+      padding: 36px 32px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .feat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(200,240,58,0.4), transparent);
+    }
+
+    .feat-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(200,240,58,0.2);
+    }
+
+    /* Icon circle */
+    .icon-wrap {
+      width: 52px; height: 52px;
+      border-radius: 14px;
       display: flex;
-      gap: 3rem;
-      animation: marquee 28s linear infinite;
-      white-space: nowrap;
-    }
-    @keyframes marquee {
-      from { transform: translateX(0); }
-      to { transform: translateX(-50%); }
+      align-items: center;
+      justify-content: center;
+      background: rgba(200,240,58,0.1);
+      font-size: 1.4rem;
+      color: var(--accent);
+      margin-bottom: 20px;
     }
 
-    /* Attestation flow animation */
+    .icon-wrap-teal {
+      background: rgba(26,255,213,0.1);
+      color: var(--accent2);
+    }
+
+    /* Flow connector */
     .flow-line {
-      stroke-dasharray: 300;
-      stroke-dashoffset: 300;
-      animation: drawLine 2.5s ease forwards;
-    }
-    @keyframes drawLine {
-      to { stroke-dashoffset: 0; }
-    }
-
-    .pulse-dot {
-      animation: pulseDot 2s ease-in-out infinite;
-    }
-    @keyframes pulseDot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.4); }
-    }
-
-    /* Counter animation */
-    .count-up { transition: all 0.3s ease; }
-
-    /* Card hover */
-    .feature-card {
-      transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s ease;
-    }
-    .feature-card:hover {
-      transform: translateY(-6px);
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1px;
+      background: linear-gradient(to bottom, rgba(200,240,58,0.5), transparent);
+      height: 60px;
     }
 
     /* Pricing card */
-    .pricing-card {
-      transition: transform 0.3s ease;
+    .price-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 40px 36px;
       position: relative;
-    }
-    .pricing-card:hover { transform: translateY(-8px); }
-
-    /* Acid text */
-    .acid-text {
-      color: var(--acid);
-    }
-    .signal-text {
-      color: var(--signal);
+      transition: transform 0.3s ease;
     }
 
-    /* Horizontal rule styled */
-    .rule {
+    .price-card:hover { transform: translateY(-6px); }
+
+    .price-card.featured {
+      background: linear-gradient(145deg, rgba(200,240,58,0.08), rgba(26,255,213,0.04));
+      border-color: rgba(200,240,58,0.3);
+    }
+
+    .price-card.featured::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(200,240,58,0.5), rgba(26,255,213,0.3));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    /* CTA button */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent);
+      color: var(--ink);
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.92rem;
+      letter-spacing: 0.04em;
+      padding: 14px 28px;
+      border-radius: 100px;
       border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      background: #d6ff45;
+      transform: scale(1.03);
+      box-shadow: 0 0 40px rgba(200,240,58,0.3);
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: transparent;
+      color: var(--paper);
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.92rem;
+      letter-spacing: 0.04em;
+      padding: 13px 26px;
+      border-radius: 100px;
+      border: 1px solid rgba(245,243,238,0.2);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-ghost:hover {
+      border-color: rgba(245,243,238,0.5);
+      background: rgba(255,255,255,0.05);
+    }
+
+    /* Divider line */
+    .divider {
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(184,255,87,0.3), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    }
+
+    /* Scrolling ticker */
+    .ticker-wrap {
+      overflow: hidden;
+      white-space: nowrap;
+    }
+
+    .ticker-inner {
+      display: inline-flex;
+      gap: 48px;
+      animation: ticker 30s linear infinite;
+    }
+
+    @keyframes ticker {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Floating badge */
+    .float-badge {
+      background: rgba(30,33,40,0.9);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 16px 20px;
     }
 
     /* Nav */
     nav {
-      transition: background 0.3s ease, backdrop-filter 0.3s ease;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      transition: all 0.3s ease;
     }
+
     nav.scrolled {
-      background: rgba(10,13,15,0.92) !important;
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid rgba(184,255,87,0.08);
+      background: rgba(10,12,15,0.85);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
 
-    /* Accordion */
-    .faq-body {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-    .faq-body.open { max-height: 400px; }
+    /* Section offset for anchor */
+    section { scroll-margin-top: 80px; }
 
-    /* Glow button */
-    .btn-acid {
-      background: var(--acid);
-      color: var(--ink);
-      font-family: 'Syne', sans-serif;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      transition: all 0.2s ease;
-      box-shadow: 0 0 0 0 rgba(184,255,87,0);
-    }
-    .btn-acid:hover {
-      box-shadow: 0 0 32px rgba(184,255,87,0.45);
-      transform: translateY(-2px);
-    }
-
-    .btn-outline {
-      border: 1px solid rgba(244,241,235,0.2);
-      color: var(--paper);
-      font-family: 'Syne', sans-serif;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      transition: all 0.2s ease;
-    }
-    .btn-outline:hover {
-      border-color: var(--acid);
-      color: var(--acid);
-    }
-
-    /* Tag badge */
-    .tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.25rem 0.85rem;
-      border-radius: 9999px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      font-family: 'Syne', sans-serif;
-    }
-
-    /* Diagonal section divider */
-    .clip-diagonal {
-      clip-path: polygon(0 0, 100% 4%, 100% 100%, 0 96%);
-    }
-
-    .clip-diagonal-rev {
-      clip-path: polygon(0 4%, 100% 0, 100% 96%, 0 100%);
-    }
-
-    /* Step connector line */
-    .step-connector {
-      position: absolute;
-      left: 20px;
-      top: 40px;
-      bottom: -40px;
-      width: 1px;
-      background: linear-gradient(180deg, rgba(184,255,87,0.4) 0%, transparent 100%);
-    }
-
-    /* Scroll reveal */
-    .reveal {
-      opacity: 0;
-      transform: translateY(30px);
-      transition: opacity 0.7s ease, transform 0.7s ease;
-    }
-    .reveal.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    /* Ticker item */
-    .ticker-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0 1.5rem;
-      font-family: 'Syne', sans-serif;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      opacity: 0.55;
-    }
-
-    /* Stat underline */
-    .stat-line {
+    /* Oracle viz */
+    .oracle-ring {
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      border: 1px solid rgba(200,240,58,0.15);
+      display: flex; align-items: center; justify-content: center;
       position: relative;
+      animation: spin-slow 20s linear infinite;
     }
-    .stat-line::after {
-      content: '';
-      position: absolute;
-      bottom: -4px;
-      left: 0;
-      width: 100%;
-      height: 2px;
-      background: var(--acid);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 0.6s ease;
-    }
-    .stat-line.visible::after { transform: scaleX(1); }
 
-    /* Floating badge */
-    @keyframes floatBadge {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-8px); }
+    .oracle-ring-inner {
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      border: 1px solid rgba(26,255,213,0.15);
+      display: flex; align-items: center; justify-content: center;
+      animation: spin-slow 15s linear infinite reverse;
     }
-    .float-anim { animation: floatBadge 4s ease-in-out infinite; }
 
-    /* ZK proof visualization */
-    .zk-ring {
-      animation: rotateRing 8s linear infinite;
+    .oracle-core {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(200,240,58,0.15), rgba(26,255,213,0.1));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem;
+      color: var(--accent);
+      box-shadow: 0 0 60px rgba(200,240,58,0.15), inset 0 0 40px rgba(200,240,58,0.05);
     }
-    @keyframes rotateRing {
-      from { transform: rotate(0deg); }
+
+    @keyframes spin-slow {
       to { transform: rotate(360deg); }
     }
-    .zk-ring-rev {
-      animation: rotateRingRev 12s linear infinite;
+
+    .dot-orbit {
+      position: absolute;
+      width: 10px; height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--accent);
     }
-    @keyframes rotateRingRev {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(-360deg); }
+
+    .dot-orbit-2 {
+      background: var(--accent2);
+      box-shadow: 0 0 12px var(--accent2);
+    }
+
+    /* Partner logo placeholder */
+    .partner-logo {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 16px 28px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+      color: rgba(245,243,238,0.4);
+      white-space: nowrap;
+    }
+
+    /* Timeline */
+    .timeline-item {
+      position: relative;
+      padding-left: 32px;
+    }
+
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 8px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 16px var(--accent);
+    }
+
+    .timeline-item::after {
+      content: '';
+      position: absolute;
+      left: 4px; top: 24px;
+      width: 1px;
+      height: calc(100% + 20px);
+      background: linear-gradient(to bottom, rgba(200,240,58,0.3), transparent);
+    }
+
+    .timeline-item:last-child::after { display: none; }
+
+    /* Glassmorphism card */
+    .glass {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+    }
+
+    /* Gradient text */
+    .grad-text {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Mobile menu */
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: flex; }
+
+    @media (max-width: 768px) {
+      .oracle-ring { width: 240px; height: 240px; }
+      .oracle-ring-inner { width: 160px; height: 160px; }
+      .oracle-core { width: 90px; height: 90px; font-size: 1.8rem; }
     }
   </style>
 </head>
+
 <body>
 
-<!-- =============================== NAV =============================== -->
-<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 px-6 py-4">
-  <div class="max-w-7xl mx-auto flex items-center justify-between">
-    <a href="#" class="font-display font-800 text-xl tracking-tight flex items-center gap-2">
-      <span class="w-7 h-7 rounded-md flex items-center justify-center" style="background:var(--acid)">
-        <i class="bi bi-hexagon-fill text-xs" style="color:var(--ink)"></i>
-      </span>
-      <span class="font-display font-extrabold">Klara</span>
-    </a>
-    <div class="hidden md:flex items-center gap-8 text-sm font-medium" style="color: rgba(244,241,235,0.7)">
-      <a href="#how-it-works" class="hover:text-white transition-colors">How It Works</a>
-      <a href="#features" class="hover:text-white transition-colors">Features</a>
-      <a href="#ecosystem" class="hover:text-white transition-colors">Ecosystem</a>
-      <a href="#pricing" class="hover:text-white transition-colors">Pricing</a>
-      <a href="#faq" class="hover:text-white transition-colors">FAQ</a>
-    </div>
-    <div class="flex items-center gap-3">
-      <a href="#" class="btn-outline hidden md:flex text-sm px-4 py-2 rounded-lg">Docs</a>
-      <a href="#pricing" class="btn-acid text-sm px-5 py-2 rounded-lg">Get Access</a>
-    </div>
-  </div>
-</nav>
-
-<!-- =============================== HERO =============================== -->
-<section class="relative min-h-screen flex flex-col justify-center overflow-hidden pt-20" style="background: var(--ink);">
-  <div class="mesh-blob hero-blob-1"></div>
-  <div class="mesh-blob hero-blob-2"></div>
-
-  <!-- Ticker tape -->
-  <div class="overflow-hidden py-3 border-y" style="border-color: rgba(184,255,87,0.1); background: rgba(184,255,87,0.03);">
-    <div class="marquee-track">
-      <span class="ticker-item"><i class="bi bi-shield-check" style="color:var(--acid)"></i> Differential Privacy</span>
-      <span class="ticker-item"><i class="bi bi-cpu" style="color:var(--signal)"></i> ZK Attestations</span>
-      <span class="ticker-item"><i class="bi bi-activity" style="color:var(--acid)"></i> Wearable Oracle</span>
-      <span class="ticker-item"><i class="bi bi-lock" style="color:var(--signal)"></i> Biometric Privacy</span>
-      <span class="ticker-item"><i class="bi bi-graph-up" style="color:var(--acid)"></i> FitFi Infrastructure</span>
-      <span class="ticker-item"><i class="bi bi-globe2" style="color:var(--signal)"></i> Web3 Health Layer</span>
-      <span class="ticker-item"><i class="bi bi-database-check" style="color:var(--acid)"></i> On-Chain Proofs</span>
-      <!-- duplicate for seamless loop -->
-      <span class="ticker-item"><i class="bi bi-shield-check" style="color:var(--acid)"></i> Differential Privacy</span>
-      <span class="ticker-item"><i class="bi bi-cpu" style="color:var(--signal)"></i> ZK Attestations</span>
-      <span class="ticker-item"><i class="bi bi-activity" style="color:var(--acid)"></i> Wearable Oracle</span>
-      <span class="ticker-item"><i class="bi bi-lock" style="color:var(--signal)"></i> Biometric Privacy</span>
-      <span class="ticker-item"><i class="bi bi-graph-up" style="color:var(--acid)"></i> FitFi Infrastructure</span>
-      <span class="ticker-item"><i class="bi bi-globe2" style="color:var(--signal)"></i> Web3 Health Layer</span>
-      <span class="ticker-item"><i class="bi bi-database-check" style="color:var(--acid)"></i> On-Chain Proofs</span>
-    </div>
-  </div>
-
-  <div class="max-w-7xl mx-auto px-6 w-full py-16 md:py-24">
-    <div class="grid md:grid-cols-2 gap-12 items-center">
-      <!-- Left: Copy -->
-      <div>
-        <div class="mb-6">
-          <span class="tag" style="background: rgba(184,255,87,0.1); color: var(--acid); border: 1px solid rgba(184,255,87,0.25);">
-            <i class="bi bi-broadcast"></i> Health Oracle Protocol
-          </span>
+  <!-- ═══════════════════════════════════════════════════════ NAV -->
+  <nav id="navbar" class="px-6 md:px-12 py-5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <a href="#" class="flex items-center gap-3">
+        <div style="width:32px;height:32px;background:linear-gradient(135deg,#c8f03a,#1affd5);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <i class="bi bi-hexagon-fill" style="color:#0a0c0f;font-size:1rem;"></i>
         </div>
-
-        <h1 class="font-display font-extrabold leading-none mb-6" style="font-size: clamp(3rem, 6vw, 5.5rem); letter-spacing: -0.03em;">
-          Prove.<br/>
-          <span class="acid-text">Not Reveal.</span><br/>
-          Earn.
-        </h1>
-
-        <p class="text-lg leading-relaxed mb-8 max-w-lg" style="color: rgba(244,241,235,0.65);">
-          Klara is an AI-powered health data oracle that connects to your wearables and submits on-chain wellness attestations using differential privacy — verifying your achievements without ever exposing your biometrics.
-        </p>
-
-        <div class="flex flex-wrap gap-4 mb-10">
-          <a href="#pricing" class="btn-acid px-7 py-3.5 rounded-xl text-base flex items-center gap-2">
-            Start Building <i class="bi bi-arrow-right"></i>
-          </a>
-          <a href="#how-it-works" class="btn-outline px-7 py-3.5 rounded-xl text-base flex items-center gap-2">
-            <i class="bi bi-play-circle"></i> How It Works
-          </a>
-        </div>
-
-        <div class="flex items-center gap-6 text-sm" style="color: rgba(244,241,235,0.45);">
-          <span class="flex items-center gap-1.5"><i class="bi bi-check2-circle acid-text"></i> No PII stored on-chain</span>
-          <span class="flex items-center gap-1.5"><i class="bi bi-check2-circle acid-text"></i> SOC2 Ready</span>
-          <span class="flex items-center gap-1.5"><i class="bi bi-check2-circle acid-text"></i> Open SDK</span>
-        </div>
-      </div>
-
-      <!-- Right: Visual -->
-      <div class="relative flex items-center justify-center">
-        <!-- ZK proof visual -->
-        <div class="relative w-80 h-80">
-          <!-- Outer ring -->
-          <div class="zk-ring absolute inset-0 rounded-full" style="border: 1px dashed rgba(184,255,87,0.25);"></div>
-          <!-- Middle ring -->
-          <div class="zk-ring-rev absolute inset-8 rounded-full" style="border: 1px solid rgba(0,229,201,0.2);"></div>
-          <!-- Inner circle -->
-          <div class="absolute inset-16 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, rgba(184,255,87,0.08), rgba(0,229,201,0.06)); border: 1px solid rgba(184,255,87,0.15);">
-            <div class="text-center">
-              <div class="font-display font-extrabold text-2xl acid-text">ZK</div>
-              <div class="text-xs mt-0.5" style="color: rgba(244,241,235,0.5);">PROOF</div>
-            </div>
-          </div>
-
-          <!-- Floating nodes -->
-          <div class="float-anim absolute -top-4 left-1/2 -translate-x-1/2 w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(184,255,87,0.1); border: 1px solid rgba(184,255,87,0.3);">
-            <i class="bi bi-watch text-lg acid-text"></i>
-          </div>
-          <div class="float-anim absolute top-1/2 -right-4 -translate-y-1/2 w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(0,229,201,0.08); border: 1px solid rgba(0,229,201,0.25); animation-delay: 1s;">
-            <i class="bi bi-boxes text-lg signal-text"></i>
-          </div>
-          <div class="float-anim absolute -bottom-4 left-1/2 -translate-x-1/2 w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(184,255,87,0.1); border: 1px solid rgba(184,255,87,0.3); animation-delay: 2s;">
-            <i class="bi bi-coin text-lg acid-text"></i>
-          </div>
-          <div class="float-anim absolute top-1/2 -left-4 -translate-y-1/2 w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(0,229,201,0.08); border: 1px solid rgba(0,229,201,0.25); animation-delay: 0.5s;">
-            <i class="bi bi-shield-lock text-lg signal-text"></i>
-          </div>
-
-          <!-- Dot decorations on rings -->
-          <div class="pulse-dot absolute top-0 right-1/3 w-2 h-2 rounded-full acid-text" style="background: var(--acid);"></div>
-          <div class="pulse-dot absolute bottom-1/4 right-0 w-1.5 h-1.5 rounded-full" style="background: var(--signal); animation-delay: 0.8s;"></div>
-          <div class="pulse-dot absolute top-1/3 left-0 w-1.5 h-1.5 rounded-full acid-text" style="background: var(--acid); animation-delay: 1.5s;"></div>
-        </div>
-
-        <!-- Attestation card floating -->
-        <div class="absolute -bottom-6 -left-6 rounded-xl p-4 text-xs font-mono" style="background: rgba(10,13,15,0.9); border: 1px solid rgba(184,255,87,0.2); min-width: 200px;">
-          <div class="flex items-center gap-2 mb-2">
-            <div class="w-2 h-2 rounded-full" style="background: var(--acid);"></div>
-            <span class="font-display font-bold text-xs" style="color: var(--acid);">ATTESTATION VALID</span>
-          </div>
-          <div style="color: rgba(244,241,235,0.5);">wellness_score: <span style="color: var(--signal);">"THRESHOLD_MET"</span></div>
-          <div style="color: rgba(244,241,235,0.5);">proof: <span style="color: rgba(244,241,235,0.3);">0x7f3a...d8e1</span></div>
-          <div style="color: rgba(244,241,235,0.5);">pii_exposed: <span style="color: var(--rust);">false</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Stats bar -->
-  <div class="border-t" style="border-color: rgba(244,241,235,0.06);">
-    <div class="max-w-7xl mx-auto px-6 py-8">
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        <div class="reveal" id="stat1">
-          <div class="font-display font-extrabold text-3xl acid-text stat-line" id="s1">0+</div>
-          <div class="text-sm mt-1" style="color: rgba(244,241,235,0.45);">Protocols Integrated</div>
-        </div>
-        <div class="reveal" id="stat2">
-          <div class="font-display font-extrabold text-3xl signal-text">∞</div>
-          <div class="text-sm mt-1" style="color: rgba(244,241,235,0.45);">Privacy Guarantee</div>
-        </div>
-        <div class="reveal" id="stat3">
-          <div class="font-display font-extrabold text-3xl acid-text stat-line" id="s3">0ms</div>
-          <div class="text-sm mt-1" style="color: rgba(244,241,235,0.45);">Attestation Latency</div>
-        </div>
-        <div class="reveal" id="stat4">
-          <div class="font-display font-extrabold text-3xl signal-text">$0</div>
-          <div class="text-sm mt-1" style="color: rgba(244,241,235,0.45);">PII Ever On-Chain</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =============================== PARTNER LOGOS =============================== -->
-<section class="py-12 overflow-hidden" style="background: rgba(244,241,235,0.02);">
-  <div class="max-w-7xl mx-auto px-6">
-    <p class="text-center text-xs font-display font-bold uppercase tracking-widest mb-8" style="color: rgba(244,241,235,0.25);">Integrates with leading Web3 infrastructure</p>
-    <div class="flex flex-wrap items-center justify-center gap-8 md:gap-16">
-      <div class="flex items-center gap-2 opacity-30 hover:opacity-60 transition-opacity">
-        <i class="bi bi-hexagon text-xl" style="color: var(--acid)"></i>
-        <span class="font-display font-bold text-sm">Arbitrum</span>
-      </div>
-      <div class="flex items-center gap-2 opacity-30 hover:opacity-60 transition-opacity">
-        <i class="bi bi-circle text-xl" style="color: var(--signal)"></i>
-        <span class="font-display font-bold text-sm">Optimism</span>
-      </div>
-      <div class="flex items-center gap-2 opacity-30 hover:opacity-60 transition-opacity">
-        <i class="bi bi-watch text-xl" style="color: var(--paper)"></i>
-        <span class="font-display font-bold text-sm">Oura Ring</span>
-      </div>
-      <div class="flex items-center gap-2 opacity-30 hover:opacity-60 transition-opacity">
-        <i class="bi bi-activity text-xl" style="color: var(--paper)"></i>
-        <span class="font-display font-bold text-sm">WHOOP</span>
-      </div>
-      <div class="flex items-center gap-2 opacity-30 hover:opacity-60 transition-opacity">
-        <i class="bi bi-apple text-xl" style="color: var(--paper)"></i>
-        <span class="font-display font-bold text-sm">HealthKit</span>
-      </div>
-      <div class="flex items-center gap-2 opacity-30 hover:opacity-60 transition-opacity">
-        <i class="bi bi-wallet2 text-xl" style="color: var(--acid)"></i>
-        <span class="font-display font-bold text-sm">MetaMask</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="rule" />
-
-<!-- =============================== HOW IT WORKS =============================== -->
-<section id="how-it-works" class="py-24 md:py-32 relative overflow-hidden">
-  <div class="mesh-blob" style="width:500px;height:500px;background:radial-gradient(circle, rgba(0,229,201,0.07) 0%, transparent 70%);top:0;left:-200px;"></div>
-
-  <div class="max-w-7xl mx-auto px-6">
-    <div class="mb-16 reveal">
-      <span class="tag mb-4" style="background: rgba(0,229,201,0.08); color: var(--signal); border: 1px solid rgba(0,229,201,0.2);">
-        <i class="bi bi-diagram-3"></i> The Oracle Protocol
-      </span>
-      <h2 class="font-display font-extrabold mt-4" style="font-size: clamp(2.5rem, 4vw, 4rem); letter-spacing: -0.03em; max-width: 700px; line-height: 1.05;">
-        From wrist to chain.<br/><span class="signal-text">Zero data exposure.</span>
-      </h2>
-    </div>
-
-    <!-- Flow diagram -->
-    <div class="grid md:grid-cols-4 gap-6 mb-20">
-      <!-- Step 1 -->
-      <div class="reveal feature-card rounded-2xl p-6 relative" style="background: rgba(244,241,235,0.03); border: 1px solid rgba(244,241,235,0.06);">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background: rgba(184,255,87,0.1);">
-          <i class="bi bi-watch text-xl acid-text"></i>
-        </div>
-        <div class="font-display font-extrabold text-xs uppercase tracking-widest mb-2 acid-text opacity-60">01 — Collect</div>
-        <h3 class="font-display font-bold text-lg mb-2">Wearable Sync</h3>
-        <p class="text-sm leading-relaxed" style="color: rgba(244,241,235,0.5);">AI agent securely connects to your device via off-chain, encrypted data pipes. Your raw biometrics never leave your local environment.</p>
-        <div class="absolute bottom-4 right-4 w-6 h-6 rounded-full flex items-center justify-center" style="background: rgba(184,255,87,0.15);">
-          <i class="bi bi-arrow-right text-xs acid-text"></i>
-        </div>
-      </div>
-      <!-- Step 2 -->
-      <div class="reveal feature-card rounded-2xl p-6 relative" style="background: rgba(244,241,235,0.03); border: 1px solid rgba(244,241,235,0.06);">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background: rgba(0,229,201,0.08);">
-          <i class="bi bi-cpu text-xl signal-text"></i>
-        </div>
-        <div class="font-display font-extrabold text-xs uppercase tracking-widest mb-2 signal-text opacity-60">02 — Compute</div>
-        <h3 class="font-display font-bold text-lg mb-2">AI Scoring</h3>
-        <p class="text-sm leading-relaxed" style="color: rgba(244,241,235,0.5);">Proprietary ML models evaluate wellness metrics against protocol thresholds, applying differential privacy noise to obscure exact values.</p>
-        <div class="absolute bottom-4 right-4 w-6 h-6 rounded-full flex items-center justify-center" style="background: rgba(0,229,201,0.12);">
-          <i class="bi bi-arrow-right text-xs signal-text"></i>
-        </div>
-      </div>
-      <!-- Step 3 -->
-      <div class="reveal feature-card rounded-2xl p-6 relative" style="background: rgba(244,241,235,0.03); border: 1px solid rgba(244,241,235,0.06);">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background: rgba(184,255,87,0.1);">
-          <i class="bi bi-shield-lock text-xl acid-text"></i>
-        </div>
-        <div class="font-display font-extrabold text-xs uppercase tracking-widest mb-2 acid-text opacity-60">03 — Prove</div>
-        <h3 class="font-display font-bold text-lg mb-2">ZK Generation</h3>
-        <p class="text-sm leading-relaxed" style="color: rgba(244,241,235,0.5);">Zero-knowledge proofs are generated cryptographically, confirming achievement conditions are met — without encoding any raw measurement.</p>
-        <div class="absolute bottom-4 right-4 w-6 h-6 rounded-full flex items-center justify-center" style="background: rgba(184,255,87,0.15);">
-          <i class="bi bi-arrow-right text-xs acid-text"></i>
-        </div>
-      </div>
-      <!-- Step 4 -->
-      <div class="reveal feature-card rounded-2xl p-6 relative" style="background: rgba(244,241,235,0.03); border: 1px solid rgba(244,241,235,0.06);">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style="background: rgba(0,229,201,0.08);">
-          <i class="bi bi-coin text-xl signal-text"></i>
-        </div>
-        <div class="font-display font-extrabold text-xs uppercase tracking-widest mb-2 signal-text opacity-60">04 — Attest</div>
-        <h3 class="font-display font-bold text-lg mb-2">On-Chain Reward</h3>
-        <p class="text-sm leading-relaxed" style="color: rgba(244,241,235,0.5);">Verified attestation is submitted on-chain. Protocols release token rewards, insurance discounts, or DAO governance rights — trustlessly.</p>
-        <div class="absolute bottom-4 right-4 w-6 h-6 rounded-full flex items-center justify-center" style="background: rgba(0,229,201,0.12);">
-          <i class="bi bi-check2 text-xs signal-text"></i>
-        </div>
-      </div>
-    </div>
-
-    <!-- Big visual attestation flow -->
-    <div class="reveal rounded-2xl overflow-hidden" style="background: rgba(244,241,235,0.02); border: 1px solid rgba(244,241,235,0.06);">
-      <div class="p-6 md:p-10">
-        <div class="flex items-center gap-3 mb-8">
-          <div class="w-2 h-2 rounded-full pulse-dot" style="background: var(--acid);"></div>
-          <span class="font-display font-bold text-xs uppercase tracking-widest acid-text">Live Attestation Flow</span>
-        </div>
-        <div class="overflow-x-auto">
-          <svg viewBox="0 0 800 120" class="w-full" style="min-width: 600px; max-height: 120px;">
-            <!-- Nodes -->
-            <rect x="20" y="35" width="130" height="50" rx="10" fill="rgba(184,255,87,0.08)" stroke="rgba(184,255,87,0.3)" stroke-width="1"/>
-            <text x="85" y="58" text-anchor="middle" fill="rgba(184,255,87,0.9)" font-family="Syne,sans-serif" font-size="11" font-weight="700">WEARABLE</text>
-            <text x="85" y="73" text-anchor="middle" fill="rgba(244,241,235,0.4)" font-family="Inter,sans-serif" font-size="9">off-chain data</text>
-
-            <rect x="205" y="35" width="130" height="50" rx="10" fill="rgba(0,0,0,0.3)" stroke="rgba(0,229,201,0.25)" stroke-width="1"/>
-            <text x="270" y="58" text-anchor="middle" fill="rgba(0,229,201,0.9)" font-family="Syne,sans-serif" font-size="11" font-weight="700">AI ORACLE</text>
-            <text x="270" y="73" text-anchor="middle" fill="rgba(244,241,235,0.4)" font-family="Inter,sans-serif" font-size="9">differential privacy</text>
-
-            <rect x="390" y="35" width="130" height="50" rx="10" fill="rgba(0,0,0,0.3)" stroke="rgba(184,255,87,0.25)" stroke-width="1"/>
-            <text x="455" y="58" text-anchor="middle" fill="rgba(184,255,87,0.9)" font-family="Syne,sans-serif" font-size="11" font-weight="700">ZK PROOF</text>
-            <text x="455" y="73" text-anchor="middle" fill="rgba(244,241,235,0.4)" font-family="Inter,sans-serif" font-size="9">no PII encoded</text>
-
-            <rect x="575" y="35" width="130" height="50" rx="10" fill="rgba(0,229,201,0.06)" stroke="rgba(0,229,201,0.3)" stroke-width="1"/>
-            <text x="640" y="58" text-anchor="middle" fill="rgba(0,229,201,0.9)" font-family="Syne,sans-serif" font-size="11" font-weight="700">BLOCKCHAIN</text>
-            <text x="640" y="73" text-anchor="middle" fill="rgba(244,241,235,0.4)" font-family="Inter,sans-serif" font-size="9">verifiable attestation</text>
-
-            <!-- Arrows -->
-            <path d="M150 60 L205 60" stroke="rgba(184,255,87,0.4)" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowAcid)"/>
-            <path d="M335 60 L390 60" stroke="rgba(0,229,201,0.4)" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowSignal)"/>
-            <path d="M520 60 L575 60" stroke="rgba(184,255,87,0.4)" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrowAcid)"/>
-
-            <!-- Lock icon between wearable and oracle -->
-            <circle cx="178" cy="60" r="8" fill="rgba(10,13,15,0.9)" stroke="rgba(184,255,87,0.3)" stroke-width="1"/>
-            <text x="178" y="64" text-anchor="middle" fill="rgba(184,255,87,0.8)" font-size="9">🔒</text>
-
-            <defs>
-              <marker id="arrowAcid" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                <path d="M0,0 L0,6 L6,3 z" fill="rgba(184,255,87,0.6)"/>
-              </marker>
-              <marker id="arrowSignal" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-                <path d="M0,0 L0,6 L6,3 z" fill="rgba(0,229,201,0.6)"/>
-              </marker>
-            </defs>
-          </svg>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="rule" />
-
-<!-- =============================== FEATURES =============================== -->
-<section id="features" class="py-24 md:py-32 relative overflow-hidden">
-  <div class="mesh-blob" style="width:400px;height:400px;background:radial-gradient(circle, rgba(184,255,87,0.06) 0%, transparent 70%);bottom:0;right:-100px;"></div>
-
-  <div class="max-w-7xl mx-auto px-6">
-    <div class="grid md:grid-cols-2 gap-16 items-start mb-20">
-      <div class="reveal">
-        <span class="tag mb-4" style="background: rgba(184,255,87,0.08); color: var(--acid); border: 1px solid rgba(184,255,87,0.2);">
-          <i class="bi bi-layers"></i> Core Technology
-        </span>
-        <h2 class="font-display font-extrabold mt-4 leading-none" style="font-size: clamp(2.5rem, 4vw, 4rem); letter-spacing: -0.03em;">
-          Built for the <span class="acid-text">trust layer</span> of Web3 health.
-        </h2>
-      </div>
-      <div class="reveal">
-        <p class="text-lg leading-relaxed" style="color: rgba(244,241,235,0.55);">
-          Klara's oracle infrastructure is purpose-built at the intersection of privacy-preserving AI, cryptographic proofs, and decentralized data networks — giving protocols the verification they need while users keep complete sovereignty over their health data.
-        </p>
-      </div>
-    </div>
-
-    <!-- Features grid - asymmetric layout -->
-    <div class="grid md:grid-cols-3 gap-5">
-      <!-- Large feature 1 -->
-      <div class="reveal feature-card md:col-span-2 rounded-2xl p-8 relative overflow-hidden" style="background: linear-gradient(135deg, rgba(184,255,87,0.06) 0%, rgba(0,229,201,0.03) 100%); border: 1px solid rgba(184,255,87,0.12);">
-        <div class="absolute top-0 right-0 w-40 h-40 rounded-full opacity-20" style="background: radial-gradient(circle, var(--acid) 0%, transparent 70%); transform: translate(30%, -30%);"></div>
-        <i class="bi bi-shield-shaded text-5xl acid-text mb-6 block"></i>
-        <h3 class="font-display font-extrabold text-2xl mb-3">Differential Privacy Engine</h3>
-        <p class="leading-relaxed mb-6" style="color: rgba(244,241,235,0.55);">Industry-grade (ε, δ)-differential privacy guarantees inject mathematically calibrated noise into all health metrics before processing. Even with full database access, no individual's true biometric can be reverse-engineered.</p>
-        <div class="flex gap-3 flex-wrap">
-          <span class="tag text-xs" style="background: rgba(184,255,87,0.08); color: var(--acid); border: 1px solid rgba(184,255,87,0.2);">ε-DP Certified</span>
-          <span class="tag text-xs" style="background: rgba(184,255,87,0.08); color: var(--acid); border: 1px solid rgba(184,255,87,0.2);">Gaussian Mechanism</span>
-          <span class="tag text-xs" style="background: rgba(184,255,87,0.08); color: var(--acid); border: 1px solid rgba(184,255,87,0.2);">Laplace Noise</span>
-        </div>
-      </div>
-
-      <!-- Tall feature 2 -->
-      <div class="reveal feature-card rounded-2xl p-8 flex flex-col justify-between" style="background: rgba(244,241,235,0.02); border: 1px solid rgba(244,241,235,0.06);">
-        <div>
-          <i class="bi bi-key text-4xl signal-text mb-6 block"></i>
-          <h3 class="font-display font-extrabold text-xl mb-3">Zero-Knowledge Proofs</h3>
-          <p class="text-sm leading-relaxed" style="color: rgba(244,241,235,0.5);">Every attestation is backed by a succinct ZKP. Protocols verify achievement conditions in milliseconds without any knowledge of underlying data.</p>
-        </div>
-        <div class="mt-6 pt-6" style="border-top: 1px solid rgba(244,241,235,0.06);">
-          <div class="font-mono text-xs" style="color: var(--signal);">verify(π, pub_inputs) → ✓</div>
-        </div>
-      </div>
-
-      <!-- Feature 3 -->
-      <div class="reveal feature-card rounded-2xl p-8" style="background: rgba(244,241,235,0.02); border: 1px solid rgba(244,241,235,0.06);">
-        <i class="bi bi-diagram-2 text-4xl acid-text mb-6 block"></i>
-        <h3 class="font-display font-extrabold text-xl mb-3">Multi-Wearable Aggregation</h3>
-        <p class="text-sm leading-relaxed" style="color: rgba(244,241,235,0.5);">Native connectors for Oura, WHOOP, Apple HealthKit, Garmin, and Fitbit. Single unified data model regardless of device ecosystem.</p>
-      </div>
-
-      <!-- Feature 4 -->
-      <div class="reveal feature-card rounded-2xl p-8" style="background: rgba(244,241,235,0.02); border: 1px solid rgba(244,241,235,0.06);">
-        <i class="bi bi-lightning-charge text-4xl signal-text mb-6 block"></i>
-        <h3 class="font-display font-extrabold text-xl mb-3">Sub-Second Attestation</h3>
-        <p class="text-sm leading-relaxed" style="color: rgba(244,241,235,0.5);">Optimized oracle nodes with L2-native submission. From wearable event trigger to on-chain confirmation in under 800ms average.</p>
-      </div>
-
-      <!-- Large feature 5 -->
-      <div class="reveal feature-card md:col-span-3 rounded-2xl p-8 md:flex gap-8 items-center" style="background: rgba(244,241,235,0.02); border: 1px solid rgba(244,241,235,0.06);">
-        <div class="md:w-1/2 mb-6 md:mb-0">
-          <i class="bi bi-code-slash text-4xl acid-text mb-6 block"></i>
-          <h3 class="font-display font-extrabold text-2xl mb-3">Developer SDK</h3>
-          <p class="leading-relaxed" style="color: rgba(244,241,235,0.55);">A clean, type-safe SDK for TypeScript, Solidity, and Rust. Integrate verifiable health attestations into any dApp in under 50 lines. Ships with playground environment, test fixtures, and simulation mode.</p>
-        </div>
-        <div class="md:w-1/2 rounded-xl overflow-hidden" style="background: rgba(10,13,15,0.8); border: 1px solid rgba(184,255,87,0.1);">
-          <div class="flex items-center gap-2 px-4 py-3" style="border-bottom: 1px solid rgba(244,241,235,0.05);">
-            <div class="w-2.5 h-2.5 rounded-full" style="background: #ff5f57;"></div>
-            <div class="w-2.5 h-2.5 rounded-full" style="background: #febc2e;"></div>
-            <div class="w-2.5 h-2.5 rounded-full" style="background: #28c840;"></div>
-            <span class="text-xs ml-2 font-mono" style="color: rgba(244,241,235,0.3);">klara-integration.ts</span>
-          </div>
-          <pre class="p-5 text-xs overflow-x-auto leading-relaxed"><code><span style="color:rgba(244,241,235,0.35);">// Initialize Klara oracle client</span>
-<span style="color:var(--signal);">import</span> <span style="color:var(--paper);">{ KlaraOracle }</span> <span style="color:var(--signal);">from</span> <span style="color:var(--acid);">'@klara/sdk'</span>
-
-<span style="color:var(--signal);">const</span> <span style="color:var(--paper);">oracle</span> = <span style="color:var(--signal);">new</span> <span style="color:var(--signal);">KlaraOracle</span>({
-  <span style="color:var(--acid);">privacyBudget</span>: <span style="color:var(--paper);">0.1</span>,  <span style="color:rgba(244,241,235,0.3);">// ε value</span>
-  <span style="color:var(--acid);">chain</span>: <span style="color:var(--paper);">'arbitrum-one'</span>,
-  <span style="color:var(--acid);">threshold</span>: <span style="color:var(--paper);">'STEPS_10K'</span>
-})
-
-<span style="color:rgba(244,241,235,0.35);">// Submit verifiable wellness attestation</span>
-<span style="color:var(--signal);">const</span> <span style="color:var(--paper);">{ proof, txHash }</span> = <span style="color:var(--signal);">await</span> oracle
-  .<span style="color:var(--signal);">attest</span>({ <span style="color:var(--acid);">userId</span>: wallet.address })
-
-<span style="color:rgba(244,241,235,0.35);">// proof contains: "threshold_met: true"</span>
-<span style="color:rgba(244,241,235,0.35);">// No precise step count ever leaves device</span></code></pre>
-        </div>
-      </div>
-
-      <!-- Feature 6 -->
-      <div class="reveal feature-card rounded-2xl p-8" style="background: rgba(244,241,235,0.02); border: 1px solid rgba(244,241,235,0.06);">
-        <i class="bi bi-people text-4xl acid-text mb-6 block"></i>
-        <h3 class="font-display font-extrabold text-xl mb-3">Sybil Resistance</h3>
-        <p class="text-sm leading-relaxed" style="color: rgba(244,241,235,0.5);">Continuous behavioral fingerprinting and anomaly detection powered by federated ML prevent spoofing without requiring identity disclosure.</p>
-      </div>
-
-      <!-- Feature 7 -->
-      <div class="reveal feature-card rounded-2xl p-8" style="background: rgba(244,241,235,0.02); border: 1px solid rgba(244,241,235,0.06);">
-        <i class="bi bi-file-earmark-check text-4xl signal-text mb-6 block"></i>
-        <h3 class="font-display font-extrabold text-xl mb-3">Compliance-Ready</h3>
-        <p class="text-sm leading-relaxed" style="color: rgba(244,241,235,0.5);">Architecture designed for HIPAA, GDPR, and CCPA alignment. Third-party security audits published publicly. SOC 2 Type II in progress.</p>
-      </div>
-
-      <!-- Feature 8 -->
-      <div class="reveal feature-card rounded-2xl p-8" style="background: rgba(244,241,235,0.02); border: 1px solid rgba(244,241,235,0.06);">
-        <i class="bi bi-graph-up-arrow text-4xl acid-text mb-6 block"></i>
-        <h3 class="font-display font-extrabold text-xl mb-3">Longitudinal Tracking</h3>
-        <p class="text-sm leading-relaxed" style="color: rgba(244,241,235,0.5);">Privacy-preserving trend analysis enables De-Ins platforms to build dynamic, time-weighted risk models from verified wellness trajectories.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="rule" />
-
-<!-- =============================== ECOSYSTEM / WHO IT'S FOR =============================== -->
-<section id="ecosystem" class="py-24 md:py-32 relative overflow-hidden" style="background: rgba(184,255,87,0.025);">
-  <div class="max-w-7xl mx-auto px-6">
-    <div class="text-center mb-16 reveal">
-      <span class="tag mb-4" style="background: rgba(0,229,201,0.08); color: var(--signal); border: 1px solid rgba(0,229,201,0.2);">
-        <i class="bi bi-people-fill"></i> Ecosystem
-      </span>
-      <h2 class="font-display font-extrabold mt-4" style="font-size: clamp(2.5rem, 4vw, 3.5rem); letter-spacing: -0.03em;">
-        Who Klara powers.
-      </h2>
-    </div>
-
-    <div class="grid md:grid-cols-3 gap-6">
-      <!-- Card 1 -->
-      <div class="reveal feature-card rounded-2xl overflow-hidden" style="border: 1px solid rgba(184,255,87,0.15);">
-        <div class="p-1" style="background: linear-gradient(135deg, rgba(184,255,87,0.2), rgba(184,255,87,0.05));"></div>
-        <div class="p-8">
-          <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-6" style="background: rgba(184,255,87,0.1);">
-            <i class="bi bi-trophy text-2xl acid-text"></i>
-          </div>
-          <h3 class="font-display font-extrabold text-xl mb-2">FitFi Protocols & Wellness DAOs</h3>
-          <p class="text-sm leading-relaxed mb-6" style="color: rgba(244,241,235,0.5);">Secure your token-based reward economy with fraud-proof activity verification. Prevent Sybil attacks on your wellness incentive programs without requiring users to expose PII.</p>
-          <div class="space-y-2">
-            <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.6);">
-              <i class="bi bi-check2-circle acid-text text-base"></i>
-              <span>Fraud-proof step/workout verification</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.6);">
-              <i class="bi bi-check2-circle acid-text text-base"></i>
-              <span>DAO-governed achievement thresholds</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.6);">
-              <i class="bi bi-check2-circle acid-text text-base"></i>
-              <span>Multi-chain reward distribution</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 2 -->
-      <div class="reveal feature-card rounded-2xl overflow-hidden" style="border: 1px solid rgba(0,229,201,0.15);">
-        <div class="p-1" style="background: linear-gradient(135deg, rgba(0,229,201,0.2), rgba(0,229,201,0.05));"></div>
-        <div class="p-8">
-          <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-6" style="background: rgba(0,229,201,0.08);">
-            <i class="bi bi-heart-pulse text-2xl signal-text"></i>
-          </div>
-          <h3 class="font-display font-extrabold text-xl mb-2">Decentralized Insurance & DeSci</h3>
-          <p class="text-sm leading-relaxed mb-6" style="color: rgba(244,241,235,0.5);">Build dynamic risk models from verified, longitudinal wellness data. Enable behavior-adjusted premiums and research incentives without ever holding sensitive health records.</p>
-          <div class="space-y-2">
-            <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.6);">
-              <i class="bi bi-check2-circle signal-text text-base"></i>
-              <span>Longitudinal wellness trend proofs</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.6);">
-              <i class="bi bi-check2-circle signal-text text-base"></i>
-              <span>Dynamic premium adjustment signals</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.6);">
-              <i class="bi bi-check2-circle signal-text text-base"></i>
-              <span>Research incentive verification</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 3 -->
-      <div class="reveal feature-card rounded-2xl overflow-hidden" style="border: 1px solid rgba(244,241,235,0.08);">
-        <div class="p-1" style="background: linear-gradient(135deg, rgba(244,241,235,0.1), rgba(244,241,235,0.02));"></div>
-        <div class="p-8">
-          <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-6" style="background: rgba(244,241,235,0.05);">
-            <i class="bi bi-buildings text-2xl" style="color: var(--paper);"></i>
-          </div>
-          <h3 class="font-display font-extrabold text-xl mb-2">Web3-Enabled Enterprise Wellness</h3>
-          <p class="text-sm leading-relaxed mb-6" style="color: rgba(244,241,235,0.5);">Deploy compliant corporate wellness programs that respect employee privacy while verifying participation for benefit calculations and incentive disbursement.</p>
-          <div class="space-y-2">
-            <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.6);">
-              <i class="bi bi-check2-circle text-base" style="color: var(--paper);"></i>
-              <span>HIPAA/GDPR-aligned architecture</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.6);">
-              <i class="bi bi-check2-circle text-base" style="color: var(--paper);"></i>
-              <span>White-label SDK for HR platforms</span>
-            </div>
-            <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.6);">
-              <i class="bi bi-check2-circle text-base" style="color: var(--paper);"></i>
-              <span>Anonymous aggregate analytics</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Quote / Manifesto -->
-    <div class="reveal mt-16 rounded-2xl p-10 md:p-14 text-center" style="background: linear-gradient(135deg, rgba(184,255,87,0.05), rgba(0,229,201,0.03)); border: 1px solid rgba(184,255,87,0.1);">
-      <div class="text-5xl mb-6 opacity-30 font-display">"</div>
-      <blockquote class="font-display font-extrabold text-2xl md:text-3xl leading-tight max-w-3xl mx-auto" style="letter-spacing: -0.02em; color: var(--paper);">
-        Your biometrics are among the most intimate data you generate. They belong to you — not to a blockchain, not to a protocol, not to us.
-      </blockquote>
-      <p class="mt-6 text-sm" style="color: rgba(244,241,235,0.4);">Klara Manifesto — Privacy by Design, Not by Promise.</p>
-    </div>
-  </div>
-</section>
-
-<hr class="rule" />
-
-<!-- =============================== PRICING =============================== -->
-<section id="pricing" class="py-24 md:py-32 relative overflow-hidden">
-  <div class="mesh-blob" style="width:500px;height:500px;background:radial-gradient(circle, rgba(0,229,201,0.06) 0%, transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
-
-  <div class="max-w-7xl mx-auto px-6">
-    <div class="text-center mb-16 reveal">
-      <span class="tag mb-4" style="background: rgba(184,255,87,0.08); color: var(--acid); border: 1px solid rgba(184,255,87,0.2);">
-        <i class="bi bi-layers-half"></i> Pricing
-      </span>
-      <h2 class="font-display font-extrabold mt-4" style="font-size: clamp(2.5rem, 4vw, 3.5rem); letter-spacing: -0.03em;">
-        Scale with your protocol.
-      </h2>
-      <p class="mt-4 text-lg max-w-xl mx-auto" style="color: rgba(244,241,235,0.5);">
-        Transparent, usage-based pricing. Start free for development, scale to enterprise with a single contract.
-      </p>
-    </div>
-
-    <div class="grid md:grid-cols-3 gap-6 items-stretch">
-      <!-- Starter -->
-      <div class="pricing-card reveal rounded-2xl p-8 flex flex-col" style="background: rgba(244,241,235,0.02); border: 1px solid rgba(244,241,235,0.08);">
-        <div class="mb-6">
-          <div class="font-display font-bold text-xs uppercase tracking-widest mb-2" style="color: rgba(244,241,235,0.4);">Developer</div>
-          <div class="font-display font-extrabold text-5xl mb-1">$0</div>
-          <div class="text-sm" style="color: rgba(244,241,235,0.4);">Free forever for dev & testing</div>
-        </div>
-        <div class="space-y-3 flex-1 mb-8">
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 acid-text"></i> 500 attestations/month
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 acid-text"></i> Sandbox oracle network
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 acid-text"></i> Full SDK access
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 acid-text"></i> Community Discord support
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.35);">
-            <i class="bi bi-x text-base" style="color: rgba(244,241,235,0.2);"></i> Production mainnet
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.35);">
-            <i class="bi bi-x text-base" style="color: rgba(244,241,235,0.2);"></i> SLA guarantees
-          </div>
-        </div>
-        <a href="#" class="btn-outline w-full py-3 rounded-xl text-sm text-center font-display font-bold">Start Building Free</a>
-      </div>
-
-      <!-- Pro — Featured -->
-      <div class="pricing-card reveal rounded-2xl p-8 flex flex-col relative" style="background: linear-gradient(135deg, rgba(184,255,87,0.08), rgba(0,229,201,0.04)); border: 1px solid rgba(184,255,87,0.3);">
-        <div class="absolute -top-3 left-1/2 -translate-x-1/2">
-          <span class="tag text-xs" style="background: var(--acid); color: var(--ink);">
-            <i class="bi bi-star-fill"></i> Most Popular
-          </span>
-        </div>
-        <div class="mb-6">
-          <div class="font-display font-bold text-xs uppercase tracking-widest mb-2 acid-text opacity-70">Protocol</div>
-          <div class="font-display font-extrabold text-5xl mb-1">$490<span class="text-2xl font-normal" style="color: rgba(244,241,235,0.4);">/mo</span></div>
-          <div class="text-sm" style="color: rgba(244,241,235,0.4);">Billed monthly or annually (save 20%)</div>
-        </div>
-        <div class="space-y-3 flex-1 mb-8">
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 acid-text"></i> 100,000 attestations/month
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 acid-text"></i> Production mainnet (multi-chain)
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 acid-text"></i> 5 wearable integrations
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 acid-text"></i> Custom ε-privacy budget
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 acid-text"></i> 99.9% SLA uptime
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 acid-text"></i> Dedicated Slack support
-          </div>
-        </div>
-        <a href="#" class="btn-acid w-full py-3 rounded-xl text-sm text-center">Get Access</a>
-      </div>
-
-      <!-- Enterprise -->
-      <div class="pricing-card reveal rounded-2xl p-8 flex flex-col" style="background: rgba(244,241,235,0.02); border: 1px solid rgba(244,241,235,0.08);">
-        <div class="mb-6">
-          <div class="font-display font-bold text-xs uppercase tracking-widest mb-2" style="color: rgba(0,229,201,0.6);">Enterprise</div>
-          <div class="font-display font-extrabold text-5xl mb-1 signal-text">Custom</div>
-          <div class="text-sm" style="color: rgba(244,241,235,0.4);">Annual contract, custom ACV</div>
-        </div>
-        <div class="space-y-3 flex-1 mb-8">
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 signal-text"></i> Unlimited attestations
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 signal-text"></i> Private oracle node deployment
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 signal-text"></i> All wearable integrations
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 signal-text"></i> Custom ZK circuit development
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 signal-text"></i> 99.99% SLA + dedicated infra
-          </div>
-          <div class="flex items-center gap-2 text-sm" style="color: rgba(244,241,235,0.7);">
-            <i class="bi bi-check2 signal-text"></i> Joint security audits
-          </div>
-        </div>
-        <a href="#" class="btn-outline w-full py-3 rounded-xl text-sm text-center font-display font-bold" style="border-color: rgba(0,229,201,0.3); color: var(--signal);">Book a Call</a>
-      </div>
-    </div>
-
-    <!-- Pay per attestation note -->
-    <div class="reveal mt-8 rounded-xl p-5 flex items-center gap-4" style="background: rgba(244,241,235,0.02); border: 1px solid rgba(244,241,235,0.06);">
-      <i class="bi bi-lightning-charge text-2xl acid-text flex-shrink-0"></i>
-      <div>
-        <span class="font-display font-bold text-sm">Pay-Per-Attestation also available.</span>
-        <span class="text-sm ml-2" style="color: rgba(244,241,235,0.45);">High-volume partners can opt for transactional pricing at $0.0015/attestation. Revenue scales directly with network activity.</span>
-      </div>
-    </div>
-  </div>
-</section>
-
-<hr class="rule" />
-
-<!-- =============================== FAQ =============================== -->
-<section id="faq" class="py-24 md:py-32">
-  <div class="max-w-4xl mx-auto px-6">
-    <div class="text-center mb-16 reveal">
-      <span class="tag mb-4" style="background: rgba(184,255,87,0.08); color: var(--acid); border: 1px solid rgba(184,255,87,0.2);">
-        <i class="bi bi-chat-square-text"></i> FAQ
-      </span>
-      <h2 class="font-display font-extrabold mt-4" style="font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.03em;">
-        The hard questions, answered.
-      </h2>
-    </div>
-
-    <div class="space-y-3" id="faq-list">
-      <!-- FAQ items injected by JS -->
-    </div>
-  </div>
-</section>
-
-<hr class="rule" />
-
-<!-- =============================== CTA =============================== -->
-<section class="py-24 md:py-32 relative overflow-hidden">
-  <div class="mesh-blob" style="width:700px;height:700px;background:radial-gradient(circle, rgba(184,255,87,0.08) 0%, transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
-
-  <div class="max-w-4xl mx-auto px-6 text-center reveal">
-    <div class="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full" style="background: rgba(184,255,87,0.08); border: 1px solid rgba(184,255,87,0.2);">
-      <div class="pulse-dot w-2 h-2 rounded-full" style="background: var(--acid);"></div>
-      <span class="font-display font-bold text-xs uppercase tracking-widest acid-text">Early Access Open</span>
-    </div>
-
-    <h2 class="font-display font-extrabold leading-none mb-6" style="font-size: clamp(3rem, 6vw, 5rem); letter-spacing: -0.03em;">
-      The health oracle<br/><span class="acid-text">Web3 deserves.</span>
-    </h2>
-
-    <p class="text-lg mb-10 max-w-xl mx-auto" style="color: rgba(244,241,235,0.55);">
-      Join the protocols, DAOs, and developers building the future of verifiable, privacy-first wellness on-chain.
-    </p>
-
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <a href="#pricing" class="btn-acid px-8 py-4 rounded-xl text-base flex items-center justify-center gap-2">
-        Start with Free Tier <i class="bi bi-arrow-right"></i>
+        <span class="syne font-800 text-xl tracking-tight" style="font-weight:800;">KLARA</span>
       </a>
-      <a href="#" class="btn-outline px-8 py-4 rounded-xl text-base flex items-center justify-center gap-2">
-        <i class="bi bi-file-text"></i> Read the Whitepaper
-      </a>
-    </div>
 
-    <div class="mt-12 flex flex-wrap justify-center gap-8 text-sm" style="color: rgba(244,241,235,0.35);">
-      <span class="flex items-center gap-2"><i class="bi bi-github"></i> Open-source SDK on GitHub</span>
-      <span class="flex items-center gap-2"><i class="bi bi-discord"></i> 1,200+ devs in Discord</span>
-      <span class="flex items-center gap-2"><i class="bi bi-file-earmark-check"></i> Audit reports published</span>
-    </div>
-  </div>
-</section>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#how" class="text-sm text-white/60 hover:text-white transition-colors">How It Works</a>
+        <a href="#features" class="text-sm text-white/60 hover:text-white transition-colors">Features</a>
+        <a href="#use-cases" class="text-sm text-white/60 hover:text-white transition-colors">Use Cases</a>
+        <a href="#pricing" class="text-sm text-white/60 hover:text-white transition-colors">Pricing</a>
+        <a href="#partners" class="text-sm text-white/60 hover:text-white transition-colors">Partners</a>
+      </div>
 
-<!-- =============================== FOOTER =============================== -->
-<footer class="py-16" style="background: rgba(0,0,0,0.4); border-top: 1px solid rgba(244,241,235,0.05);">
-  <div class="max-w-7xl mx-auto px-6">
-    <div class="grid md:grid-cols-5 gap-12 mb-12">
-      <!-- Brand -->
-      <div class="md:col-span-2">
-        <a href="#" class="font-display font-800 text-xl tracking-tight flex items-center gap-2 mb-4">
-          <span class="w-8 h-8 rounded-md flex items-center justify-center" style="background:var(--acid)">
-            <i class="bi bi-hexagon-fill text-sm" style="color:var(--ink)"></i>
-          </span>
-          <span class="font-display font-extrabold text-2xl">Klara</span>
+      <div class="hidden md:flex items-center gap-4">
+        <a href="#" class="btn-ghost text-sm py-2.5 px-5">
+          <i class="bi bi-book"></i> Docs
         </a>
-        <p class="text-sm leading-relaxed max-w-xs mb-6" style="color: rgba(244,241,235,0.4);">
-          The AI-powered health data oracle for Web3. Privacy by design. Verification by cryptography.
-        </p>
-        <div class="flex gap-3">
-          <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center btn-outline text-sm">
-            <i class="bi bi-twitter-x"></i>
-          </a>
-          <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center btn-outline text-sm">
-            <i class="bi bi-github"></i>
-          </a>
-          <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center btn-outline text-sm">
-            <i class="bi bi-discord"></i>
-          </a>
+        <a href="#waitlist" class="btn-primary text-sm py-2.5 px-5">
+          Get Early Access <i class="bi bi-arrow-right"></i>
+        </a>
+      </div>
+
+      <button id="hamburger" class="md:hidden text-white/70 text-2xl" onclick="toggleMenu()">
+        <i class="bi bi-list" id="ham-icon"></i>
+      </button>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="flex-col gap-4 pt-6 pb-4 px-2">
+      <a href="#how" class="text-sm text-white/70 hover:text-white py-2 border-b border-white/05" onclick="toggleMenu()">How It Works</a>
+      <a href="#features" class="text-sm text-white/70 hover:text-white py-2 border-b border-white/05" onclick="toggleMenu()">Features</a>
+      <a href="#use-cases" class="text-sm text-white/70 hover:text-white py-2 border-b border-white/05" onclick="toggleMenu()">Use Cases</a>
+      <a href="#pricing" class="text-sm text-white/70 hover:text-white py-2 border-b border-white/05" onclick="toggleMenu()">Pricing</a>
+      <a href="#waitlist" class="btn-primary mt-2 justify-center" onclick="toggleMenu()">Get Early Access <i class="bi bi-arrow-right"></i></a>
+    </div>
+  </nav>
+
+  <!-- ═══════════════════════════════════════════════════════ HERO -->
+  <section id="hero" class="relative min-h-screen flex items-center pt-24 pb-16 overflow-hidden">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="max-w-7xl mx-auto px-6 md:px-12 w-full">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+
+        <!-- Left: Copy -->
+        <div>
+          <div class="pill mb-8">
+            <i class="bi bi-shield-lock-fill"></i>
+            Privacy-Preserving Health Oracle · Web3
+          </div>
+
+          <h1 class="syne font-extrabold leading-none mb-6" style="font-size: clamp(2.8rem, 6vw, 5.2rem); letter-spacing: -0.03em;">
+            Your health data.<br />
+            <span class="stroke-text">Verified on-chain.</span><br />
+            <span class="grad-text">Never exposed.</span>
+          </h1>
+
+          <p class="text-white/55 leading-relaxed mb-10 max-w-lg" style="font-size:1.05rem;">
+            Klara is an AI-powered oracle that bridges your wearables to Web3 — submitting cryptographic health attestations using differential privacy. Protocols get verified data. You keep your secrets.
+          </p>
+
+          <div class="flex flex-wrap gap-4 mb-14">
+            <a href="#waitlist" class="btn-primary">
+              Request Protocol Access <i class="bi bi-arrow-right"></i>
+            </a>
+            <a href="#how" class="btn-ghost">
+              <i class="bi bi-play-circle"></i> See How It Works
+            </a>
+          </div>
+
+          <!-- Trust signals -->
+          <div class="flex flex-wrap gap-6">
+            <div class="flex items-center gap-2 text-white/40 text-sm">
+              <i class="bi bi-check-circle-fill" style="color:#c8f03a;"></i>
+              Zero PII on-chain
+            </div>
+            <div class="flex items-center gap-2 text-white/40 text-sm">
+              <i class="bi bi-check-circle-fill" style="color:#c8f03a;"></i>
+              ZK-Proof Attestations
+            </div>
+            <div class="flex items-center gap-2 text-white/40 text-sm">
+              <i class="bi bi-check-circle-fill" style="color:#c8f03a;"></i>
+              EVM Compatible
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Oracle Visualization -->
+        <div class="flex justify-center lg:justify-end relative">
+          <!-- Floating data cards -->
+          <div class="float-badge absolute -left-4 top-8 z-10" style="max-width:180px;">
+            <div class="flex items-center gap-2 mb-1">
+              <i class="bi bi-activity" style="color:#1affd5;font-size:0.85rem;"></i>
+              <span class="text-xs text-white/50 syne font-semibold tracking-wide">ATTESTATION</span>
+            </div>
+            <div class="text-xs text-white/70">Steps threshold met</div>
+            <div class="text-xs mt-1" style="color:#c8f03a;">✓ Verified · ZK Proof</div>
+          </div>
+
+          <div class="float-badge absolute -right-4 bottom-12 z-10" style="max-width:190px;">
+            <div class="flex items-center gap-2 mb-1">
+              <i class="bi bi-shield-check" style="color:#c8f03a;font-size:0.85rem;"></i>
+              <span class="text-xs text-white/50 syne font-semibold tracking-wide">PRIVACY</span>
+            </div>
+            <div class="text-xs text-white/70">Differential noise applied</div>
+            <div class="text-xs mt-1" style="color:#1affd5;">ε = 0.1 · No raw data</div>
+          </div>
+
+          <!-- Oracle rings -->
+          <div class="oracle-ring" style="position:relative;">
+            <!-- orbit dots -->
+            <div class="dot-orbit" style="top: 12px; left: 50%; transform: translateX(-50%);"></div>
+            <div class="dot-orbit dot-orbit-2" style="bottom: 12px; right: 20%;"></div>
+
+            <div class="oracle-ring-inner" style="position:relative;">
+              <div class="dot-orbit dot-orbit-2" style="top: 10px; right: 15%;"></div>
+              <div class="dot-orbit" style="bottom: 10px; left: 20%;"></div>
+
+              <div class="oracle-core" style="animation: none;">
+                <i class="bi bi-hexagon-half"></i>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Links -->
-      <div>
-        <h4 class="font-display font-bold text-sm uppercase tracking-widest mb-4" style="color: rgba(244,241,235,0.3);">Product</h4>
-        <ul class="space-y-3 text-sm" style="color: rgba(244,241,235,0.5);">
-          <li><a href="#how-it-works" class="hover:text-white transition-colors">How It Works</a></li>
-          <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
-          <li><a href="#pricing" class="hover:text-white transition-colors">Pricing</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Changelog</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Roadmap</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4 class="font-display font-bold text-sm uppercase tracking-widest mb-4" style="color: rgba(244,241,235,0.3);">Developers</h4>
-        <ul class="space-y-3 text-sm" style="color: rgba(244,241,235,0.5);">
-          <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">SDK Reference</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">GitHub</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Hackathons</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Grants</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4 class="font-display font-bold text-sm uppercase tracking-widest mb-4" style="color: rgba(244,241,235,0.3);">Company</h4>
-        <ul class="space-y-3 text-sm" style="color: rgba(244,241,235,0.5);">
-          <li><a href="#" class="hover:text-white transition-colors">About</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Security</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Contact</a></li>
-        </ul>
+      <!-- Stats row -->
+      <div class="mt-20 pt-12 border-t border-white/06 grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div>
+          <div class="stat-num">50+</div>
+          <div class="text-white/40 text-sm mt-1">Protocol Integrations</div>
+        </div>
+        <div>
+          <div class="stat-num">10M+</div>
+          <div class="text-white/40 text-sm mt-1">Attestations Served</div>
+        </div>
+        <div>
+          <div class="stat-num">0</div>
+          <div class="text-white/40 text-sm mt-1">PII Exposed On-Chain</div>
+        </div>
+        <div>
+          <div class="stat-num">&lt;2s</div>
+          <div class="text-white/40 text-sm mt-1">Attestation Latency</div>
+        </div>
       </div>
     </div>
+  </section>
 
-    <div class="pt-8 flex flex-col md:flex-row items-center justify-between gap-4" style="border-top: 1px solid rgba(244,241,235,0.06);">
-      <p class="text-xs" style="color: rgba(244,241,235,0.25);">© 2025 Klara Protocol, Inc. All rights reserved.</p>
-      <div class="flex gap-6 text-xs" style="color: rgba(244,241,235,0.25);">
-        <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
-        <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
-        <a href="#" class="hover:text-white transition-colors">Audit Reports</a>
-      </div>
+  <!-- ═══════════════════════════════════════════════════════ TICKER -->
+  <div class="divider"></div>
+  <div class="py-7 ticker-wrap" style="background:rgba(255,255,255,0.015);">
+    <div class="ticker-inner">
+      <span class="partner-logo">ARBITRUM</span>
+      <span class="partner-logo">OPTIMISM</span>
+      <span class="partner-logo">OURA RING</span>
+      <span class="partner-logo">WHOOP</span>
+      <span class="partner-logo">APPLE HEALTHKIT</span>
+      <span class="partner-logo">CHAINLINK</span>
+      <span class="partner-logo">POLYGON</span>
+      <span class="partner-logo">STRAVA</span>
+      <!-- duplicate for infinite scroll -->
+      <span class="partner-logo">ARBITRUM</span>
+      <span class="partner-logo">OPTIMISM</span>
+      <span class="partner-logo">OURA RING</span>
+      <span class="partner-logo">WHOOP</span>
+      <span class="partner-logo">APPLE HEALTHKIT</span>
+      <span class="partner-logo">CHAINLINK</span>
+      <span class="partner-logo">POLYGON</span>
+      <span class="partner-logo">STRAVA</span>
     </div>
   </div>
-</footer>
+  <div class="divider"></div>
 
-<script>
-  // ======================== NAV SCROLL ========================
-  const navbar = document.getElementById('navbar');
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 40) navbar.classList.add('scrolled');
-    else navbar.classList.remove('scrolled');
-  });
+  <!-- ═══════════════════════════════════════════════════════ PROBLEM / HOW IT WORKS -->
+  <section id="how" class="py-28 relative overflow-hidden">
+    <div class="blob" style="width:500px;height:500px;background:radial-gradient(circle,rgba(26,255,213,0.07) 0%,transparent 70%);top:0;right:-100px;"></div>
 
-  // ======================== FAQ DATA ========================
-  const faqs = [
-    {
-      q: "Does Klara ever store my raw biometric data on-chain?",
-      a: "Never. Klara's oracle architecture ensures raw biometric data never leaves your local environment or wearable device. Only cryptographic proofs (zero-knowledge attestations) are submitted on-chain. These proofs confirm that a threshold condition was met — not the actual measurement value."
-    },
-    {
-      q: "What does differential privacy actually mean in practice?",
-      a: "Differential privacy is a mathematical framework that guarantees individual data cannot be isolated even if an attacker has access to the full dataset. Klara applies calibrated noise (via Gaussian or Laplace mechanisms) to your metrics during AI processing, ensuring that the resulting attestation is mathematically indistinguishable whether or not your specific data was included."
-    },
-    {
-      q: "Which blockchains does Klara support for attestations?",
-      a: "Klara natively supports Arbitrum One, Optimism, Polygon zkEVM, and Base. EVM-compatible chains can be integrated via our SDK. Solana support is on the Q3 2025 roadmap. Enterprise clients can request private oracle nodes on custom chains."
-    },
-    {
-      q: "Can my protocol define custom wellness achievement thresholds?",
-      a: "Yes. Protocol operators define achievement thresholds via our on-chain configuration contracts. You can set step count minimums, sleep score bands, HRV floors, or any composable combination. The oracle's AI scoring layer validates against your custom parameters — and Klara's DP engine ensures no exact user values are revealed."
-    },
-    {
-      q: "How does Klara prevent Sybil attacks or fake wearable data?",
-      a: "Klara employs continuous behavioral fingerprinting and federated anomaly detection models trained on millions of real wearable sessions. We detect impossible motion signatures, device spoofing patterns, and statistical outliers that indicate fabricated data — all without requiring biometric identity linking."
-    },
-    {
-      q: "What wearables and health data sources are supported?",
-      a: "Current production integrations include Oura Ring, WHOOP, Apple HealthKit, Fitbit, and Garmin Connect. Polar, Amazfit, and Samsung Health are in beta. Our unified health data model abstracts device differences so your protocol receives a consistent data schema regardless of user device."
-    },
-    {
-      q: "Is the SDK open source? What's the licensing?",
-      a: "The Klara SDK is open-source under MIT license. The core oracle node software and AI models are proprietary. We publish all cryptographic circuit code for independent audit. Third-party security audit reports are published on our website."
-    }
-  ];
-
-  const faqList = document.getElementById('faq-list');
-  faqs.forEach((faq, i) => {
-    const item = document.createElement('div');
-    item.className = 'reveal rounded-xl overflow-hidden';
-    item.style.cssText = 'background: rgba(244,241,235,0.02); border: 1px solid rgba(244,241,235,0.06);';
-    item.innerHTML = `
-      <button class="faq-btn w-full flex items-center justify-between p-5 text-left gap-4" data-index="${i}">
-        <span class="font-display font-bold text-base">${faq.q}</span>
-        <i class="bi bi-plus-lg flex-shrink-0 text-lg transition-transform duration-300" style="color: var(--acid);"></i>
-      </button>
-      <div class="faq-body px-5">
-        <p class="pb-5 text-sm leading-relaxed" style="color: rgba(244,241,235,0.55);">${faq.a}</p>
+    <div class="max-w-7xl mx-auto px-6 md:px-12">
+      <!-- Section label -->
+      <div class="flex items-center gap-4 mb-6">
+        <div class="pill pill-teal"><i class="bi bi-diagram-3"></i> How It Works</div>
       </div>
-    `;
-    faqList.appendChild(item);
-  });
 
-  faqList.addEventListener('click', (e) => {
-    const btn = e.target.closest('.faq-btn');
-    if (!btn) return;
-    const body = btn.nextElementSibling;
-    const icon = btn.querySelector('i');
-    const isOpen = body.classList.contains('open');
+      <div class="grid lg:grid-cols-2 gap-16 items-start">
+        <div>
+          <h2 class="syne font-extrabold mb-6" style="font-size:clamp(2rem,4vw,3.2rem);letter-spacing:-0.03em;line-height:1.1;">
+            The privacy trilemma<br />
+            <span class="grad-text">finally solved.</span>
+          </h2>
+          <p class="text-white/50 leading-relaxed mb-8" style="font-size:1.02rem;">
+            On-chain health protocols need verified behavioral data to power token rewards and risk models. But requesting raw biometrics creates catastrophic privacy liability. Klara breaks this deadlock.
+          </p>
 
-    // close all
-    document.querySelectorAll('.faq-body').forEach(b => b.classList.remove('open'));
-    document.querySelectorAll('.faq-btn i').forEach(ic => {
-      ic.classList.remove('bi-dash-lg', 'rotate-45');
-      ic.classList.add('bi-plus-lg');
-    });
+          <!-- Problem vs Solution -->
+          <div class="glass p-6 mb-8">
+            <div class="flex items-start gap-4 mb-5">
+              <div style="min-width:32px;height:32px;background:rgba(255,80,80,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                <i class="bi bi-x-lg" style="color:#ff5050;font-size:0.85rem;"></i>
+              </div>
+              <div>
+                <div class="text-sm font-semibold mb-1" style="color:#ff7070;">Before Klara</div>
+                <div class="text-white/50 text-sm leading-relaxed">Protocols either forgo real data (enabling Sybil fraud) or ingest raw biometrics, creating regulatory exposure and user distrust.</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div style="min-width:32px;height:32px;background:rgba(200,240,58,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                <i class="bi bi-check2" style="color:#c8f03a;font-size:0.85rem;"></i>
+              </div>
+              <div>
+                <div class="text-sm font-semibold mb-1" style="color:#c8f03a;">With Klara</div>
+                <div class="text-white/50 text-sm leading-relaxed">Protocols receive cryptographically verified attestations. Users' raw biometrics never leave their device ecosystem. Both parties win.</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    if (!isOpen) {
-      body.classList.add('open');
-      icon.classList.remove('bi-plus-lg');
-      icon.classList.add('bi-dash-lg');
-    }
-  });
+        <!-- Flow diagram -->
+        <div class="flex flex-col gap-0">
+          <!-- Step 1 -->
+          <div class="timeline-item pb-10">
+            <div class="glass p-6">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="icon-wrap icon-wrap-teal" style="margin-bottom:0;width:38px;height:38px;font-size:1rem;border-radius:10px;">
+                  <i class="bi bi-watch"></i>
+                </div>
+                <div>
+                  <div class="text-xs text-white/30 syne font-semibold tracking-widest">STEP 01</div>
+                  <div class="syne font-bold text-sm">Wearable Data Collection</div>
+                </div>
+              </div>
+              <p class="text-white/40 text-sm leading-relaxed">User's device (Oura, Whoop, Apple Watch) sends biometric streams to Klara's off-chain AI engine via encrypted SDK calls. Data stays fully off-chain.</p>
+            </div>
+          </div>
 
-  // ======================== SCROLL REVEAL ========================
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry, idx) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => {
-          entry.target.classList.add('visible');
-          // Also trigger stat lines
-          entry.target.querySelectorAll('.stat-line').forEach(el => el.classList.add('visible'));
-        }, 60);
-        observer.unobserve(entry.target);
+          <!-- Step 2 -->
+          <div class="timeline-item pb-10">
+            <div class="glass p-6">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="icon-wrap" style="margin-bottom:0;width:38px;height:38px;font-size:1rem;border-radius:10px;">
+                  <i class="bi bi-cpu"></i>
+                </div>
+                <div>
+                  <div class="text-xs text-white/30 syne font-semibold tracking-widest">STEP 02</div>
+                  <div class="syne font-bold text-sm">AI + Differential Privacy Engine</div>
+                </div>
+              </div>
+              <p class="text-white/40 text-sm leading-relaxed">Klara's AI evaluates wellness thresholds, applies calibrated noise (ε-differential privacy), and generates a cryptographic ZK proof of the achievement.</p>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="timeline-item">
+            <div class="glass p-6">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="icon-wrap icon-wrap-teal" style="margin-bottom:0;width:38px;height:38px;font-size:1rem;border-radius:10px;">
+                  <i class="bi bi-link-45deg"></i>
+                </div>
+                <div>
+                  <div class="text-xs text-white/30 syne font-semibold tracking-widest">STEP 03</div>
+                  <div class="syne font-bold text-sm">On-Chain Attestation</div>
+                </div>
+              </div>
+              <p class="text-white/40 text-sm leading-relaxed">A boolean attestation is posted on-chain: "Wellness goal met: TRUE." Protocols trigger rewards, adjust risk models, or unlock features — with zero raw data exposed.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ FEATURES -->
+  <section id="features" class="py-28 relative">
+    <div class="blob" style="width:600px;height:600px;background:radial-gradient(circle,rgba(200,240,58,0.06) 0%,transparent 70%);bottom:-100px;left:-150px;"></div>
+
+    <div class="max-w-7xl mx-auto px-6 md:px-12">
+      <div class="mb-16">
+        <div class="pill mb-6"><i class="bi bi-stars"></i> Core Capabilities</div>
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <h2 class="syne font-extrabold" style="font-size:clamp(2rem,4vw,3rem);letter-spacing:-0.03em;line-height:1.1;max-width:500px;">
+            Infrastructure built for<br />
+            <span class="grad-text">zero-trust wellness.</span>
+          </h2>
+          <p class="text-white/40 text-sm leading-relaxed max-w-xs">Every layer of Klara is purpose-built to serve the rigorous demands of Web3 health protocols without sacrificing user sovereignty.</p>
+        </div>
+      </div>
+
+      <!-- Feature grid — asymmetric layout -->
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Large card -->
+        <div class="feat-card lg:col-span-2 lg:row-span-1">
+          <div class="grid md:grid-cols-2 gap-8 items-start">
+            <div>
+              <div class="icon-wrap"><i class="bi bi-shield-shaded"></i></div>
+              <h3 class="syne font-bold text-xl mb-3">Differential Privacy Engine</h3>
+              <p class="text-white/45 text-sm leading-relaxed">Our AI applies ε-differential privacy to all biometric streams before generating attestations. Mathematically provable — no single data point can be reverse-engineered to identify an individual, ever.</p>
+            </div>
+            <div class="glass p-5 rounded-xl" style="background:rgba(200,240,58,0.04);">
+              <div class="text-xs text-white/30 syne font-semibold tracking-widest mb-3">PRIVACY BUDGET CONTROL</div>
+              <div class="space-y-3">
+                <div>
+                  <div class="flex justify-between text-xs text-white/50 mb-1"><span>Noise magnitude (ε)</span><span style="color:#c8f03a;">0.1</span></div>
+                  <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:4px;"><div style="height:4px;width:15%;background:linear-gradient(90deg,#c8f03a,#1affd5);border-radius:4px;"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs text-white/50 mb-1"><span>Re-identification risk</span><span style="color:#1affd5;">0.003%</span></div>
+                  <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:4px;"><div style="height:4px;width:2%;background:linear-gradient(90deg,#1affd5,#c8f03a);border-radius:4px;"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs text-white/50 mb-1"><span>Attestation confidence</span><span style="color:#c8f03a;">99.7%</span></div>
+                  <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:4px;"><div style="height:4px;width:97%;background:linear-gradient(90deg,#c8f03a,#1affd5);border-radius:4px;"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="feat-card">
+          <div class="icon-wrap icon-wrap-teal"><i class="bi bi-file-earmark-lock2"></i></div>
+          <h3 class="syne font-bold text-lg mb-3">ZK-Proof Attestations</h3>
+          <p class="text-white/45 text-sm leading-relaxed">Every health achievement generates a zero-knowledge proof — on-chain verifiable without any accompanying biometric payload.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="icon-wrap"><i class="bi bi-watch"></i></div>
+          <h3 class="syne font-bold text-lg mb-3">Universal Wearable SDK</h3>
+          <p class="text-white/45 text-sm leading-relaxed">Native connectors for Oura, Whoop, Apple HealthKit, Garmin, and Strava. One SDK, any device, any chain.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="icon-wrap icon-wrap-teal"><i class="bi bi-braces"></i></div>
+          <h3 class="syne font-bold text-lg mb-3">Developer-First API</h3>
+          <p class="text-white/45 text-sm leading-relaxed">RESTful + Webhook interfaces. Integrate Klara into your dApp or protocol in under 30 minutes with our open-source SDK.</p>
+          <div class="mt-5 p-4 rounded-xl text-xs font-mono" style="background:rgba(0,0,0,0.4);color:#1affd5;line-height:1.8;">
+            <span style="color:#c8f03a;">klara</span>.attest(<span style="color:#fff8;">walletAddress</span>,<br />
+            &nbsp;&nbsp;<span style="color:#c8f03a;">"steps_goal_10k"</span>);<br />
+            <span style="color:#fff4;">// → ZKProof</span>
+          </div>
+        </div>
+
+        <div class="feat-card">
+          <div class="icon-wrap"><i class="bi bi-robot"></i></div>
+          <h3 class="syne font-bold text-lg mb-3">AI Fraud Detection</h3>
+          <p class="text-white/45 text-sm leading-relaxed">ML models trained on behavioral patterns detect Sybil attacks and data spoofing in real time, keeping your protocol's reward economy honest.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="icon-wrap icon-wrap-teal"><i class="bi bi-lightning-charge"></i></div>
+          <h3 class="syne font-bold text-lg mb-3">Sub-2s Latency Oracle</h3>
+          <p class="text-white/45 text-sm leading-relaxed">Distributed node network ensures attestations reach any EVM-compatible chain within 2 seconds, with 99.98% uptime SLA for enterprise clients.</p>
+        </div>
+
+        <div class="feat-card">
+          <div class="icon-wrap"><i class="bi bi-people"></i></div>
+          <h3 class="syne font-bold text-lg mb-3">DAO-Native Governance</h3>
+          <p class="text-white/45 text-sm leading-relaxed">Wellness DAOs can propose and vote on new attestation schemas on-chain. Community-defined health metrics, powered by Klara's oracle.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ USE CASES -->
+  <section id="use-cases" class="py-28 relative overflow-hidden">
+    <div style="background:rgba(255,255,255,0.02);border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div class="max-w-7xl mx-auto px-6 md:px-12 py-28">
+
+      <div class="pill mb-8 pill-teal"><i class="bi bi-grid-3x3-gap"></i> Who Uses Klara</div>
+
+      <h2 class="syne font-extrabold mb-16" style="font-size:clamp(2rem,4vw,3rem);letter-spacing:-0.03em;line-height:1.1;max-width:600px;">
+        Three markets.<br />
+        One <span class="grad-text">privacy-preserving oracle.</span>
+      </h2>
+
+      <div class="grid lg:grid-cols-3 gap-8">
+
+        <!-- FitFi -->
+        <div class="relative">
+          <div style="position:absolute;top:-2px;left:0;right:0;height:3px;background:linear-gradient(90deg,#c8f03a,transparent);border-radius:3px;"></div>
+          <div class="glass p-8 h-full">
+            <div class="text-xs text-white/30 syne font-semibold tracking-widest mb-2">SEGMENT 01</div>
+            <h3 class="syne font-extrabold text-2xl mb-4" style="letter-spacing:-0.02em;">FitFi Protocols<br /><span style="color:#c8f03a;">&amp; Wellness DAOs</span></h3>
+            <p class="text-white/45 text-sm leading-relaxed mb-6">Reward real movement, not fake data. Klara enables fraud-proof, Sybil-resistant token economies where every reward reflects an actual verified wellness action.</p>
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 text-sm text-white/55">
+                <i class="bi bi-check2-circle" style="color:#c8f03a;"></i>
+                Activity-gated token rewards
+              </div>
+              <div class="flex items-center gap-3 text-sm text-white/55">
+                <i class="bi bi-check2-circle" style="color:#c8f03a;"></i>
+                Anti-spoofing behavioral ML
+              </div>
+              <div class="flex items-center gap-3 text-sm text-white/55">
+                <i class="bi bi-check2-circle" style="color:#c8f03a;"></i>
+                On-chain achievement NFTs
+              </div>
+              <div class="flex items-center gap-3 text-sm text-white/55">
+                <i class="bi bi-check2-circle" style="color:#c8f03a;"></i>
+                DAO-defined wellness schemas
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- De-Ins / DeSci -->
+        <div class="relative lg:translate-y-6">
+          <div style="position:absolute;top:-2px;left:0;right:0;height:3px;background:linear-gradient(90deg,#1affd5,transparent);border-radius:3px;"></div>
+          <div class="glass p-8 h-full" style="background:rgba(26,255,213,0.03);">
+            <div class="text-xs text-white/30 syne font-semibold tracking-widest mb-2">SEGMENT 02</div>
+            <h3 class="syne font-extrabold text-2xl mb-4" style="letter-spacing:-0.02em;">De-Ins <span style="color:#1affd5;">&amp; DeSci</span><br />Platforms</h3>
+            <p class="text-white/45 text-sm leading-relaxed mb-6">Build dynamic risk models and longitudinal research datasets using verifiable, consent-driven health data — without ever touching raw biometrics.</p>
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 text-sm text-white/55">
+                <i class="bi bi-check2-circle" style="color:#1affd5;"></i>
+                Longitudinal health attestations
+              </div>
+              <div class="flex items-center gap-3 text-sm text-white/55">
+                <i class="bi bi-check2-circle" style="color:#1affd5;"></i>
+                Dynamic on-chain risk scoring
+              </div>
+              <div class="flex items-center gap-3 text-sm text-white/55">
+                <i class="bi bi-check2-circle" style="color:#1affd5;"></i>
+                HIPAA/GDPR compatible architecture
+              </div>
+              <div class="flex items-center gap-3 text-sm text-white/55">
+                <i class="bi bi-check2-circle" style="color:#1affd5;"></i>
+                Research incentive payouts
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Enterprise Wellness -->
+        <div class="relative">
+          <div style="position:absolute;top:-2px;left:0;right:0;height:3px;background:linear-gradient(90deg,#c8f03a,#1affd5);border-radius:3px;"></div>
+          <div class="glass p-8 h-full">
+            <div class="text-xs text-white/30 syne font-semibold tracking-widest mb-2">SEGMENT 03</div>
+            <h3 class="syne font-extrabold text-2xl mb-4" style="letter-spacing:-0.02em;">Web3 Enterprise<br /><span class="grad-text">Wellness Platforms</span></h3>
+            <p class="text-white/45 text-sm leading-relaxed mb-6">Next-generation B2B2C wellness programs where employees earn on-chain benefits tied to verifiable health actions — all within a privacy-compliant infrastructure.</p>
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 text-sm text-white/55">
+                <i class="bi bi-check2-circle" style="color:#c8f03a;"></i>
+                Tokenized wellness benefits
+              </div>
+              <div class="flex items-center gap-3 text-sm text-white/55">
+                <i class="bi bi-check2-circle" style="color:#c8f03a;"></i>
+                HR compliance tools built-in
+              </div>
+              <div class="flex items-center gap-3 text-sm text-white/55">
+                <i class="bi bi-check2-circle" style="color:#c8f03a;"></i>
+                White-label SDK options
+              </div>
+              <div class="flex items-center gap-3 text-sm text-white/55">
+                <i class="bi bi-check2-circle" style="color:#c8f03a;"></i>
+                SSO + enterprise wallet support
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ TECH EDGE -->
+  <section class="py-28 relative overflow-hidden">
+    <div class="blob" style="width:500px;height:500px;background:radial-gradient(circle,rgba(200,240,58,0.07) 0%,transparent 70%);top:50%;right:-100px;transform:translateY(-50%);"></div>
+
+    <div class="max-w-7xl mx-auto px-6 md:px-12">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+
+        <!-- Left: Visual -->
+        <div class="relative">
+          <!-- Code block -->
+          <div class="glass p-8 rounded-2xl" style="font-family:monospace;font-size:0.8rem;line-height:2;">
+            <div class="flex items-center gap-2 mb-5">
+              <div style="width:10px;height:10px;border-radius:50%;background:#ff5f57;"></div>
+              <div style="width:10px;height:10px;border-radius:50%;background:#ffbd2e;"></div>
+              <div style="width:10px;height:10px;border-radius:50%;background:#28ca41;"></div>
+              <span class="text-white/20 text-xs ml-2">klara-oracle.ts</span>
+            </div>
+            <div class="text-white/30"><span style="color:#c8f03a;">import</span> <span style="color:#fff6;">{ KlaraOracle }</span> <span style="color:#c8f03a;">from</span> <span style="color:#1affd5;">'@klara/sdk'</span>;</div>
+            <br />
+            <div class="text-white/30"><span style="color:#c8f03a;">const</span> <span style="color:#fff8;">oracle</span> = <span style="color:#c8f03a;">new</span> <span style="color:#1affd5;">KlaraOracle</span>({</div>
+            <div class="text-white/30">&nbsp;&nbsp;chain: <span style="color:#1affd5;">'arbitrum'</span>,</div>
+            <div class="text-white/30">&nbsp;&nbsp;epsilon: <span style="color:#c8f03a;">0.1</span>,  <span style="color:#ffffff20;">// DP budget</span></div>
+            <div class="text-white/30">&nbsp;&nbsp;proofSystem: <span style="color:#1affd5;">'groth16'</span></div>
+            <div class="text-white/30">});</div>
+            <br />
+            <div class="text-white/30"><span style="color:#c8f03a;">const</span> <span style="color:#fff8;">result</span> = <span style="color:#c8f03a;">await</span> oracle.<span style="color:#1affd5;">verify</span>({</div>
+            <div class="text-white/30">&nbsp;&nbsp;wallet: <span style="color:#fff8;">userAddress</span>,</div>
+            <div class="text-white/30">&nbsp;&nbsp;metric: <span style="color:#1affd5;">'sleep_quality_80pct'</span>,</div>
+            <div class="text-white/30">&nbsp;&nbsp;window: <span style="color:#c8f03a;">30</span> <span style="color:#ffffff20;">// days</span></div>
+            <div class="text-white/30">});</div>
+            <br />
+            <div><span style="color:#ffffff50;">// result.attestation → </span><span style="color:#c8f03a;">true</span></div>
+            <div><span style="color:#ffffff50;">// result.proof → ZKProofObject</span></div>
+            <div><span style="color:#ffffff50;">// result.rawData → </span><span style="color:#ff7070;">undefined</span></div>
+          </div>
+
+          <!-- Floating label -->
+          <div class="float-badge absolute -top-4 -right-4" style="padding:10px 14px;">
+            <div class="text-xs syne font-bold" style="color:#c8f03a;">Open Source SDK</div>
+            <div class="text-xs text-white/40 mt-0.5">Apache 2.0 License</div>
+          </div>
+        </div>
+
+        <!-- Right: Tech pillars -->
+        <div>
+          <div class="pill mb-6"><i class="bi bi-cpu-fill"></i> Technical Foundation</div>
+          <h2 class="syne font-extrabold mb-6" style="font-size:clamp(1.8rem,3.5vw,2.8rem);letter-spacing:-0.03em;line-height:1.1;">
+            Built on three<br />cryptographic pillars.
+          </h2>
+          <p class="text-white/45 text-sm leading-relaxed mb-10">Our moat lives in the intersection of AI, differential privacy, and zero-knowledge cryptography — a combination no oracle competitor has yet replicated.</p>
+
+          <div class="space-y-6">
+            <div class="flex gap-5 items-start">
+              <div class="icon-wrap icon-wrap-teal" style="min-width:48px;height:48px;margin-bottom:0;font-size:1.2rem;border-radius:12px;">
+                <i class="bi bi-bar-chart-steps"></i>
+              </div>
+              <div>
+                <h4 class="syne font-bold mb-1">Differential Privacy (DP)</h4>
+                <p class="text-white/40 text-sm leading-relaxed">Calibrated Laplace/Gaussian noise applied to biometric inputs ensures mathematically bounded privacy guarantees under any threat model.</p>
+              </div>
+            </div>
+
+            <div class="flex gap-5 items-start">
+              <div class="icon-wrap" style="min-width:48px;height:48px;margin-bottom:0;font-size:1.2rem;border-radius:12px;">
+                <i class="bi bi-diagram-2"></i>
+              </div>
+              <div>
+                <h4 class="syne font-bold mb-1">Zero-Knowledge Proofs (ZKP)</h4>
+                <p class="text-white/40 text-sm leading-relaxed">Groth16 and PLONK proof systems generate succinct, EVM-verifiable proofs in milliseconds. Trustless verification without trusted setup requirements.</p>
+              </div>
+            </div>
+
+            <div class="flex gap-5 items-start">
+              <div class="icon-wrap icon-wrap-teal" style="min-width:48px;height:48px;margin-bottom:0;font-size:1.2rem;border-radius:12px;">
+                <i class="bi bi-robot"></i>
+              </div>
+              <div>
+                <h4 class="syne font-bold mb-1">Behavioral AI Models</h4>
+                <p class="text-white/40 text-sm leading-relaxed">Transformer-based anomaly detection identifies coordinated spoofing and Sybil patterns across cohort-level data without exposing individual signals.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ PRICING -->
+  <section id="pricing" class="py-28 relative overflow-hidden">
+    <div style="background:rgba(255,255,255,0.015);border-top:1px solid rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.05);">
+    <div class="max-w-7xl mx-auto px-6 md:px-12 py-28">
+
+      <div class="text-center mb-16">
+        <div class="pill mb-6 mx-auto inline-flex"><i class="bi bi-tag"></i> Pricing</div>
+        <h2 class="syne font-extrabold mb-4" style="font-size:clamp(2rem,4vw,3rem);letter-spacing:-0.03em;">
+          Scale with your protocol.
+        </h2>
+        <p class="text-white/40 max-w-lg mx-auto text-sm leading-relaxed">Predictable MRR for growing protocols, enterprise licensing for high-volume platforms, and usage-based pricing for maximum flexibility.</p>
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-8 items-start">
+
+        <!-- Builder -->
+        <div class="price-card">
+          <div class="text-xs text-white/30 syne font-semibold tracking-widest mb-4">BUILDER</div>
+          <div class="mb-6">
+            <span class="syne font-extrabold text-5xl" style="letter-spacing:-0.04em;">Free</span>
+          </div>
+          <p class="text-white/40 text-sm mb-8 leading-relaxed">For developers and indie protocol builders getting started with Klara.</p>
+
+          <div class="space-y-3 mb-10">
+            <div class="flex items-center gap-3 text-sm text-white/60"><i class="bi bi-check2" style="color:#c8f03a;"></i> 1,000 attestations/mo</div>
+            <div class="flex items-center gap-3 text-sm text-white/60"><i class="bi bi-check2" style="color:#c8f03a;"></i> 2 wearable integrations</div>
+            <div class="flex items-center gap-3 text-sm text-white/60"><i class="bi bi-check2" style="color:#c8f03a;"></i> Testnet + 1 mainnet chain</div>
+            <div class="flex items-center gap-3 text-sm text-white/60"><i class="bi bi-check2" style="color:#c8f03a;"></i> Community support</div>
+            <div class="flex items-center gap-3 text-sm text-white/30"><i class="bi bi-x" style="color:#ff5050;"></i> Custom schemas</div>
+            <div class="flex items-center gap-3 text-sm text-white/30"><i class="bi bi-x" style="color:#ff5050;"></i> SLA guarantee</div>
+          </div>
+
+          <a href="#waitlist" class="btn-ghost w-full justify-center">Start Building</a>
+        </div>
+
+        <!-- Growth — Featured -->
+        <div class="price-card featured relative">
+          <div class="absolute -top-4 left-1/2 -translate-x-1/2">
+            <div class="pill" style="font-size:0.65rem;padding:4px 12px;">MOST POPULAR</div>
+          </div>
+          <div class="text-xs syne font-semibold tracking-widest mb-4" style="color:#c8f03a;">GROWTH</div>
+          <div class="mb-2">
+            <span class="syne font-extrabold text-5xl" style="letter-spacing:-0.04em;">$490</span>
+          </div>
+          <div class="text-white/30 text-xs mb-6">per month, billed annually</div>
+          <p class="text-white/40 text-sm mb-8 leading-relaxed">For live FitFi protocols and Wellness DAOs scaling their reward economies.</p>
+
+          <div class="space-y-3 mb-10">
+            <div class="flex items-center gap-3 text-sm text-white/70"><i class="bi bi-check2" style="color:#c8f03a;"></i> 100,000 attestations/mo</div>
+            <div class="flex items-center gap-3 text-sm text-white/70"><i class="bi bi-check2" style="color:#c8f03a;"></i> All wearable integrations</div>
+            <div class="flex items-center gap-3 text-sm text-white/70"><i class="bi bi-check2" style="color:#c8f03a;"></i> 5 EVM chains</div>
+            <div class="flex items-center gap-3 text-sm text-white/70"><i class="bi bi-check2" style="color:#c8f03a;"></i> Custom attestation schemas</div>
+            <div class="flex items-center gap-3 text-sm text-white/70"><i class="bi bi-check2" style="color:#c8f03a;"></i> 99.9% uptime SLA</div>
+            <div class="flex items-center gap-3 text-sm text-white/30"><i class="bi bi-x" style="color:#ff5050;"></i> Dedicated support channel</div>
+          </div>
+
+          <a href="#waitlist" class="btn-primary w-full justify-center">
+            Get Growth Access <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="price-card">
+          <div class="text-xs text-white/30 syne font-semibold tracking-widest mb-4">ENTERPRISE</div>
+          <div class="mb-6">
+            <span class="syne font-extrabold text-5xl" style="letter-spacing:-0.04em;">Custom</span>
+          </div>
+          <p class="text-white/40 text-sm mb-8 leading-relaxed">For De-Ins platforms, DeSci networks, and large enterprise wellness deployments.</p>
+
+          <div class="space-y-3 mb-10">
+            <div class="flex items-center gap-3 text-sm text-white/60"><i class="bi bi-check2" style="color:#1affd5;"></i> Unlimited attestations</div>
+            <div class="flex items-center gap-3 text-sm text-white/60"><i class="bi bi-check2" style="color:#1affd5;"></i> All chains + custom L2</div>
+            <div class="flex items-center gap-3 text-sm text-white/60"><i class="bi bi-check2" style="color:#1affd5;"></i> Pay-per-attestation pricing</div>
+            <div class="flex items-center gap-3 text-sm text-white/60"><i class="bi bi-check2" style="color:#1affd5;"></i> Dedicated integration support</div>
+            <div class="flex items-center gap-3 text-sm text-white/60"><i class="bi bi-check2" style="color:#1affd5;"></i> 99.99% SLA + audit reports</div>
+            <div class="flex items-center gap-3 text-sm text-white/60"><i class="bi bi-check2" style="color:#1affd5;"></i> Custom ZK circuit development</div>
+          </div>
+
+          <a href="#waitlist" class="btn-ghost w-full justify-center" style="border-color:rgba(26,255,213,0.25);color:#1affd5;">Contact Sales</a>
+        </div>
+
+      </div>
+
+      <!-- Usage pricing note -->
+      <div class="mt-10 glass p-6 rounded-2xl flex flex-col md:flex-row items-start md:items-center gap-4 justify-between">
+        <div class="flex items-center gap-3">
+          <i class="bi bi-lightning-charge-fill text-xl" style="color:#c8f03a;"></i>
+          <div>
+            <div class="syne font-bold text-sm">Pay-per-Attestation available</div>
+            <div class="text-white/40 text-xs mt-0.5">High-volume protocols can opt into a transactional model — pay only for what you use.</div>
+          </div>
+        </div>
+        <a href="#waitlist" class="text-sm whitespace-nowrap" style="color:#c8f03a;">Talk to us →</a>
+      </div>
+
+    </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ PARTNERS -->
+  <section id="partners" class="py-28 relative">
+    <div class="max-w-7xl mx-auto px-6 md:px-12">
+      <div class="grid lg:grid-cols-2 gap-16 items-center">
+
+        <div>
+          <div class="pill mb-6"><i class="bi bi-handshake"></i> Partners &amp; Ecosystem</div>
+          <h2 class="syne font-extrabold mb-6" style="font-size:clamp(1.8rem,3.5vw,2.8rem);letter-spacing:-0.03em;line-height:1.1;">
+            Deep integrations across<br />
+            <span class="grad-text">the full Web3 stack.</span>
+          </h2>
+          <p class="text-white/45 text-sm leading-relaxed mb-10">Klara is designed as core infrastructure — embedded into wallets, oracles, and developer platforms to create frictionless distribution and defensible network effects.</p>
+
+          <div class="flex flex-col gap-5">
+            <div class="flex items-start gap-4 glass p-5 rounded-xl">
+              <div class="icon-wrap" style="min-width:44px;height:44px;margin-bottom:0;font-size:1.1rem;border-radius:12px;"><i class="bi bi-boxes"></i></div>
+              <div>
+                <div class="syne font-bold text-sm mb-1">L1/L2 Blockchain Foundations</div>
+                <div class="text-white/40 text-xs leading-relaxed">Arbitrum, Optimism, Polygon and more — securing grants, ecosystem support, and positioning Klara as native infrastructure.</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-4 glass p-5 rounded-xl">
+              <div class="icon-wrap icon-wrap-teal" style="min-width:44px;height:44px;margin-bottom:0;font-size:1.1rem;border-radius:12px;"><i class="bi bi-heart-pulse"></i></div>
+              <div>
+                <div class="syne font-bold text-sm mb-1">Wearable &amp; Health Aggregators</div>
+                <div class="text-white/40 text-xs leading-relaxed">Native SDKs for Oura, Whoop, and Apple HealthKit deliver seamless off-chain data ingestion and superior user onboarding.</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-4 glass p-5 rounded-xl">
+              <div class="icon-wrap" style="min-width:44px;height:44px;margin-bottom:0;font-size:1.1rem;border-radius:12px;"><i class="bi bi-wallet2"></i></div>
+              <div>
+                <div class="syne font-bold text-sm mb-1">Web3 Wallets &amp; Developer Platforms</div>
+                <div class="text-white/40 text-xs leading-relaxed">Embedded distribution through leading wallet providers creates zero-friction access for end-users across the ecosystem.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Partner logo grid -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="glass p-6 rounded-2xl flex flex-col items-start gap-3">
+            <i class="bi bi-boxes text-2xl" style="color:#c8f03a;"></i>
+            <div class="syne font-bold">Arbitrum</div>
+            <div class="text-xs text-white/30">L2 Foundation Partner</div>
+          </div>
+          <div class="glass p-6 rounded-2xl flex flex-col items-start gap-3">
+            <i class="bi bi-boxes text-2xl" style="color:#ff0420;"></i>
+            <div class="syne font-bold">Optimism</div>
+            <div class="text-xs text-white/30">L2 Foundation Partner</div>
+          </div>
+          <div class="glass p-6 rounded-2xl flex flex-col items-start gap-3">
+            <i class="bi bi-watch text-2xl" style="color:#1affd5;"></i>
+            <div class="syne font-bold">Oura Ring</div>
+            <div class="text-xs text-white/30">Wearable Integration</div>
+          </div>
+          <div class="glass p-6 rounded-2xl flex flex-col items-start gap-3">
+            <i class="bi bi-watch text-2xl" style="color:#c8f03a;"></i>
+            <div class="syne font-bold">WHOOP</div>
+            <div class="text-xs text-white/30">Wearable Integration</div>
+          </div>
+          <div class="glass p-6 rounded-2xl flex flex-col items-start gap-3 col-span-2">
+            <div class="flex items-center gap-3 w-full">
+              <i class="bi bi-link-45deg text-2xl" style="color:#375bd2;"></i>
+              <div>
+                <div class="syne font-bold">Apple HealthKit</div>
+                <div class="text-xs text-white/30">Health Data Aggregation Partner</div>
+              </div>
+              <div class="ml-auto pill" style="font-size:0.6rem;padding:3px 10px;">LIVE</div>
+            </div>
+          </div>
+
+          <!-- Dev ecosystem note -->
+          <div class="col-span-2 rounded-2xl p-5" style="background:linear-gradient(135deg,rgba(200,240,58,0.07),rgba(26,255,213,0.04));border:1px solid rgba(200,240,58,0.15);">
+            <div class="flex items-center gap-2 mb-2">
+              <i class="bi bi-code-slash" style="color:#c8f03a;"></i>
+              <span class="syne font-bold text-sm">Open Ecosystem</span>
+            </div>
+            <p class="text-white/40 text-xs leading-relaxed">Klara's open-source SDK and public developer portal means any protocol, DAO, or dApp can integrate in hours — not weeks.</p>
+            <div class="flex gap-4 mt-3">
+              <a href="#" class="text-xs" style="color:#c8f03a;">→ View Docs</a>
+              <a href="#" class="text-xs" style="color:#1affd5;">→ GitHub</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ WAITLIST CTA -->
+  <section id="waitlist" class="py-28 relative overflow-hidden">
+    <div class="blob" style="width:700px;height:700px;background:radial-gradient(circle,rgba(200,240,58,0.1) 0%,rgba(26,255,213,0.05) 40%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);"></div>
+
+    <div class="max-w-4xl mx-auto px-6 md:px-12 text-center relative z-10">
+      <div class="pill mb-8 mx-auto inline-flex pill-teal"><i class="bi bi-send-check"></i> Early Access</div>
+
+      <h2 class="syne font-extrabold mb-6" style="font-size:clamp(2.2rem,5vw,4rem);letter-spacing:-0.04em;line-height:1.05;">
+        Be first to build with<br />
+        <span class="grad-text">Klara's oracle.</span>
+      </h2>
+
+      <p class="text-white/45 leading-relaxed mb-12 max-w-xl mx-auto" style="font-size:1.02rem;">
+        Join the waitlist to receive early protocol access, SDK previews, technical documentation, and a private integration call with the Klara team.
+      </p>
+
+      <!-- Email form -->
+      <form id="waitlist-form" onsubmit="handleSubmit(event)" class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto mb-8">
+        <input
+          type="email"
+          id="email-input"
+          placeholder="you@protocol.xyz"
+          required
+          class="flex-1 px-5 py-3.5 rounded-full text-sm text-white placeholder-white/25 outline-none focus:ring-2"
+          style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);focus:ring-color:#c8f03a;"
+        />
+        <button type="submit" class="btn-primary whitespace-nowrap">
+          Get Access <i class="bi bi-arrow-right"></i>
+        </button>
+      </form>
+
+      <div id="form-success" class="hidden text-sm py-3 px-6 rounded-full mx-auto inline-block" style="background:rgba(200,240,58,0.12);border:1px solid rgba(200,240,58,0.3);color:#c8f03a;">
+        <i class="bi bi-check2-circle mr-2"></i>You're on the list! We'll be in touch soon.
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-6 mt-10 text-white/30 text-xs">
+        <div class="flex items-center gap-2"><i class="bi bi-lock" style="color:#c8f03a;"></i> No spam, ever</div>
+        <div class="flex items-center gap-2"><i class="bi bi-people" style="color:#1affd5;"></i> 200+ protocols already joined</div>
+        <div class="flex items-center gap-2"><i class="bi bi-lightning" style="color:#c8f03a;"></i> Integration calls within 48h</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════ FOOTER -->
+  <footer class="relative" style="border-top:1px solid rgba(255,255,255,0.06);">
+    <div class="max-w-7xl mx-auto px-6 md:px-12 py-16">
+      <div class="grid md:grid-cols-4 gap-12 mb-16">
+
+        <!-- Brand -->
+        <div class="md:col-span-1">
+          <div class="flex items-center gap-3 mb-5">
+            <div style="width:32px;height:32px;background:linear-gradient(135deg,#c8f03a,#1affd5);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+              <i class="bi bi-hexagon-fill" style="color:#0a0c0f;font-size:1rem;"></i>
+            </div>
+            <span class="syne font-extrabold text-xl tracking-tight">KLARA</span>
+          </div>
+          <p class="text-white/35 text-sm leading-relaxed mb-6">Privacy-preserving health oracle for the decentralized wellness economy.</p>
+          <div class="flex gap-3">
+            <a href="#" class="w-9 h-9 rounded-xl flex items-center justify-center text-white/40 hover:text-white transition-colors" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);">
+              <i class="bi bi-twitter-x text-sm"></i>
+            </a>
+            <a href="#" class="w-9 h-9 rounded-xl flex items-center justify-center text-white/40 hover:text-white transition-colors" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);">
+              <i class="bi bi-discord text-sm"></i>
+            </a>
+            <a href="#" class="w-9 h-9 rounded-xl flex items-center justify-center text-white/40 hover:text-white transition-colors" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);">
+              <i class="bi bi-github text-sm"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Product -->
+        <div>
+          <div class="text-xs syne font-semibold tracking-widest text-white/25 mb-5">PRODUCT</div>
+          <div class="flex flex-col gap-3">
+            <a href="#how" class="text-sm text-white/45 hover:text-white transition-colors">How It Works</a>
+            <a href="#features" class="text-sm text-white/45 hover:text-white transition-colors">Features</a>
+            <a href="#pricing" class="text-sm text-white/45 hover:text-white transition-colors">Pricing</a>
+            <a href="#" class="text-sm text-white/45 hover:text-white transition-colors">Roadmap</a>
+            <a href="#" class="text-sm text-white/45 hover:text-white transition-colors">Changelog</a>
+          </div>
+        </div>
+
+        <!-- Developers -->
+        <div>
+          <div class="text-xs syne font-semibold tracking-widest text-white/25 mb-5">DEVELOPERS</div>
+          <div class="flex flex-col gap-3">
+            <a href="#" class="text-sm text-white/45 hover:text-white transition-colors">Documentation</a>
+            <a href="#" class="text-sm text-white/45 hover:text-white transition-colors">SDK Reference</a>
+            <a href="#" class="text-sm text-white/45 hover:text-white transition-colors">GitHub</a>
+            <a href="#" class="text-sm text-white/45 hover:text-white transition-colors">API Status</a>
+            <a href="#" class="text-sm text-white/45 hover:text-white transition-colors flex items-center gap-2">
+              Discord Community
+              <i class="bi bi-box-arrow-up-right text-xs"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Company -->
+        <div>
+          <div class="text-xs syne font-semibold tracking-widest text-white/25 mb-5">COMPANY</div>
+          <div class="flex flex-col gap-3">
+            <a href="#" class="text-sm text-white/45 hover:text-white transition-colors">About</a>
+            <a href="#" class="text-sm text-white/45 hover:text-white transition-colors">Blog</a>
+            <a href="#" class="text-sm text-white/45 hover:text-white transition-colors">Security Audits</a>
+            <a href="#" class="text-sm text-white/45 hover:text-white transition-colors">Privacy Policy</a>
+            <a href="#waitlist" class="text-sm text-white/45 hover:text-white transition-colors">Contact</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer bottom -->
+      <div class="divider mb-8"></div>
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="text-white/25 text-xs">© 2025 Klara Protocol. All rights reserved. Built with 🔒 for the decentralized health economy.</div>
+        <div class="flex items-center gap-2">
+          <div class="w-2 h-2 rounded-full" style="background:#28ca41;box-shadow:0 0 8px #28ca41;"></div>
+          <span class="text-xs text-white/30">All systems operational</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══════════════════════════════════════════════════════ JAVASCRIPT -->
+  <script>
+    // Nav scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 40) {
+        navbar.classList.add('scrolled');
+      } else {
+        navbar.classList.remove('scrolled');
       }
     });
-  }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-
-  // ======================== COUNTER ANIMATION ========================
-  function animateCounter(id, target, suffix, duration) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    let start = 0;
-    const step = target / (duration / 16);
-    const timer = setInterval(() => {
-      start = Math.min(start + step, target);
-      el.textContent = Math.floor(start) + suffix;
-      if (start >= target) clearInterval(timer);
-    }, 16);
-  }
-
-  const statObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        animateCounter('s1', 50, '+', 1500);
-        animateCounter('s3', 800, 'ms', 1200);
-        statObserver.disconnect();
+    // Mobile menu toggle
+    function toggleMenu() {
+      const menu = document.getElementById('mobile-menu');
+      const icon = document.getElementById('ham-icon');
+      const isOpen = menu.classList.contains('open');
+      if (isOpen) {
+        menu.classList.remove('open');
+        icon.className = 'bi bi-list';
+      } else {
+        menu.classList.add('open');
+        icon.className = 'bi bi-x-lg';
       }
-    });
-  }, { threshold: 0.5 });
-
-  const s1 = document.getElementById('stat1');
-  if (s1) statObserver.observe(s1);
-
-  // ======================== STAGGERED REVEAL ========================
-  document.querySelectorAll('.reveal').forEach((el, idx) => {
-    const siblings = el.parentElement?.querySelectorAll('.reveal');
-    if (siblings && siblings.length > 1) {
-      const sibArr = Array.from(siblings);
-      const pos = sibArr.indexOf(el);
-      el.style.transitionDelay = `${pos * 0.08}s`;
     }
-  });
-</script>
+
+    // Waitlist form
+    function handleSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('email-input').value;
+      if (!email) return;
+      const form = document.getElementById('waitlist-form');
+      const success = document.getElementById('form-success');
+      form.style.opacity = '0';
+      form.style.transform = 'translateY(-10px)';
+      form.style.transition = 'all 0.3s ease';
+      setTimeout(() => {
+        form.style.display = 'none';
+        success.classList.remove('hidden');
+        success.style.opacity = '0';
+        success.style.transform = 'translateY(10px)';
+        success.style.transition = 'all 0.3s ease';
+        requestAnimationFrame(() => {
+          success.style.opacity = '1';
+          success.style.transform = 'translateY(0)';
+        });
+      }, 300);
+    }
+
+    // Smooth scroll for nav anchors
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Animate stats on scroll
+    const statNums = document.querySelectorAll('.stat-num');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    statNums.forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+      observer.observe(el);
+    });
+
+    // Stagger feature card animations
+    const featCards = document.querySelectorAll('.feat-card');
+    const cardObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+          }, 80 * (Array.from(featCards).indexOf(entry.target)));
+        }
+      });
+    }, { threshold: 0.05 });
+
+    featCards.forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(24px)';
+      el.style.transition = 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1), border-color 0.3s ease';
+      cardObserver.observe(el);
+    });
+  </script>
+
 </body>
 </html>
